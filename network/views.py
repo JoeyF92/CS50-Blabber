@@ -15,49 +15,27 @@ from django.forms.models import model_to_dict
 from django.db.models import Count, Case, When, BooleanField
 
 
-def index(request):
-    #query for extracting all posts from the database - in reverse order of timestamp
-    all_posts = Post.objects.all().order_by("-timestamp").values()
-    
-    # use paginator to extract just 10 posts for the page
-    p = Paginator(all_posts, 10, orphans=4)
-    #select page 1
-    page = p.page(1)
-    # check if that page has a next and/or previous page
-    prev_page = p.page(1).has_previous()
-    next_page = p.page(1).has_next()
-
-    #loop over the posts in the page -  username of post, like counts and note if current user likes it    
-    for post in page:
-        post['like_count'] = Post.objects.get(id=post['id']).likes.all().count()
-        post['user_liked'] = Post.objects.get(id=post['id']).likes.filter(id=request.user.id)
-        post['user_name'] = User.objects.get(id=post['user_id'])
-    context = {'posts': page, 'prev_page': prev_page, 'next_page': next_page }
-    form = NewPostForm()
-    context['form'] = form  
-    return render(request, "network/index.html", context)
-
-def load_post(request, page):
-    #query for extracting all posts. use annotate and count to work out number of likes per post, and then case to work out if current user liked each post
+def paginated_post(page_number, user=None):
+    #query for extracting all posts. use annotate and count to work out number of likes per post, and then case to work out if current user liked each post 
     all_posts = Post.objects.annotate(
         num_likes=Count('likes'),
         user_liked=Case(
-            When(likes=request.user, then=True),
+            When(likes=user, then=True),
             default=False,
             output_field=BooleanField(),
         )
         ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
-
+    
     #paginate all_posts and select page requested
-    paginator = Paginator(all_posts, 10)
-    page_obj = paginator.page(page)
+    paginator = Paginator(all_posts, 10, orphans=4)
+    page_obj = paginator.page(page_number)
     #get list of objects for current page
     posts = page_obj.object_list
 
     #convert datetime object into readable string
     for post in posts:
         post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
-
+    
     #create a dictionary to send as response. converting posts to a list
     data = {
         'posts' : list(posts),
@@ -66,6 +44,23 @@ def load_post(request, page):
         'current_page': page_obj.number,
         'total_pages': paginator.num_pages
     }
+
+    return data    
+
+
+
+
+def index(request):
+    #extract paginated post for page one - passing in the user to see what posts they liked
+    context = paginated_post(1, request.user)
+    #pass in form to allow new posts to be made by user
+    form = NewPostForm()
+    context['form'] = form  
+    return render(request, "network/index.html", context)
+
+def load_post(request, page):
+    #extract paginated post for the requested page - passing in the user to see what posts they liked
+    data = paginated_post(page, request.user)
     return JsonResponse(data, safe=False, status=200)
 
 def new_post(request):
