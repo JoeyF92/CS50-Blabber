@@ -1,5 +1,4 @@
 import json
-from bson import json_util
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.db import IntegrityError
@@ -13,6 +12,8 @@ from django.core import serializers
 from .models import User, Post
 from .forms import NewPostForm
 from django.forms.models import model_to_dict
+from django.db.models import Count, Case, When, BooleanField
+
 
 def index(request):
     #query for extracting all posts from the database - in reverse order of timestamp
@@ -37,28 +38,35 @@ def index(request):
     return render(request, "network/index.html", context)
 
 def load_post(request, page):
-    #query for extracting all posts from the database - in reverse order of timestamp
-    all_posts = Post.objects.all().order_by("-timestamp").values('post', 'user', 'timestamp', 'likes', 'id', 'user_id')
-    #extract page requested from the allposts query
-    page = Paginator(all_posts, 10, orphans=4).page(page)
+    #query for extracting all posts. use annotate and count to work out number of likes per post, and then case to work out if current user liked each post
+    all_posts = Post.objects.annotate(
+        num_likes=Count('likes'),
+        user_liked=Case(
+            When(likes=request.user, then=True),
+            default=False,
+            output_field=BooleanField(),
+        )
+        ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
 
-    # check if that page has a next and/or previous page
-    prev_page = page.has_previous()
-    next_page = page.has_next()
+    #paginate all_posts and select page requested
+    paginator = Paginator(all_posts, 10)
+    page_obj = paginator.page(page)
+    #get list of objects for current page
+    posts = page_obj.object_list
 
-    #create a list of 10 dicts to pass through like information about the posts
-    likes = [{}] * 10
-    for i in range(10):
-        likes[i]['like_count'] = Post.objects.get(id=page[i]['id']).likes.all().count()
-        if Post.objects.get(id=page[i]['id']).likes.filter(id=request.user.id):
-            likes[i]['user_liked'] = True
-        likes[i]['user_name'] = User.objects.get(id=page[i]['user_id']).username
-    
-    #jsonify the queryset of posts to send through to the api response
-    json_page = [json.dumps(p, default=json_util.default) for p in page]
+    #convert datetime object into readable string
+    for post in posts:
+        post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
 
-    return JsonResponse({"message": "Loaded succesfully", "page": json_page, "likes": likes, 'prev_page' : prev_page, 'next_page' : next_page}, status=200)
-    
+    #create a dictionary to send as response. converting posts to a list
+    data = {
+        'posts' : list(posts),
+        'prev_page': page_obj.has_previous(),
+        'next_page' : page_obj.has_next(),
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages
+    }
+    return JsonResponse(data, safe=False, status=200)
 
 def new_post(request):
     # Composing a new post must be via POST
