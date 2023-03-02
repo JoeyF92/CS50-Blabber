@@ -1,0 +1,143 @@
+
+
+form{
+    width: 80vw;
+    margin: auto;
+    margin-top: 2rem;
+    
+    .new-post{
+        margin-top: 0.2rem;
+    }
+}
+
+p{
+    display: inline;
+}
+
+.loaded-new-post{
+    animation: grow 1s;
+}
+
+.loaded-next-posts{}
+
+.loaded-prev-posts{}
+
+.post-group{
+    display: flex;
+    width: 80vw;
+    margin: auto;
+    margin-top: 1rem;
+    border: 2px solid rgb(221, 218, 218);
+    border-radius: 1%;
+    box-shadow: 1px 1px 3px rgb(233, 226, 226);
+    height: 5.5rem;
+       
+
+    
+    .left-post{
+        width: 30%;
+        text-align: right;
+        padding-right: 3rem;
+        padding-top: 1.5rem;
+        .time-post{
+            display: block;
+            font-size: 0.5rem;
+        }
+    }
+
+    .right-post{
+    
+        p{
+            display: block;
+            .likes{
+                font-size: 0.5rem;
+            }
+        }
+        .post-post{
+            padding-top: 0.5rem;
+      
+            
+        }
+        .likes{
+            font-size: 0.8rem;
+        }       
+        .user-liked
+        {
+            i{
+                color: red;
+            }
+            i:hover{
+                animation: dislike 0.5s;
+            }
+        }
+
+        .user-disliked
+        {
+            i{
+                color: rgb(189, 189, 189);
+            }
+            i:hover{
+                animation: like 0.5s;
+            }
+        }
+    }
+}
+
+
+
+
+@keyframes like
+{
+    from {
+        color: rgb(189, 189, 189);
+    }
+    to {
+        color: red;
+    }
+
+}
+
+@keyframes dislike {
+    from {
+        color: red;
+    }
+    to {
+        color: rgb(189, 189, 189);
+    }
+
+}
+
+@keyframes grow {
+    from{
+        opacity: 0;
+        height: 0;
+        transform: translateY(-50%);
+    }
+    to{
+        opacity: 1;
+        height: 5.5rem;
+        transform: translateY(0);
+    }
+}
+
+@keyframes hide-posts{
+    from{
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to{
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes load-posts{
+    from{
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to{
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

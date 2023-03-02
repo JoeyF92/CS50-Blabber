@@ -13,3 +13,8 @@ class NewPostForm(ModelForm):
                 'style': 'width: 100%',
             })
         }
+    # to remove the forms label:    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for key, field in self.fields.items():
+            field.label = ""

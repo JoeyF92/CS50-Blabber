@@ -12,7 +12,7 @@ from django.core import serializers
 from .models import User, Post
 from .forms import NewPostForm
 from django.forms.models import model_to_dict
-from django.db.models import Count, Case, When, BooleanField
+from django.db.models import Count, Case, When, BooleanField, F
 
 
 def paginated_post(page_number, user=None):
@@ -23,8 +23,9 @@ def paginated_post(page_number, user=None):
             When(likes=user, then=True),
             default=False,
             output_field=BooleanField(),
-        )
-        ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+        ),
+        username=F('user__username')
+        ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username').order_by("-timestamp")
     
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10, orphans=4)
@@ -46,9 +47,6 @@ def paginated_post(page_number, user=None):
     }
 
     return data    
-
-
-
 
 def index(request):
     #extract paginated post for page one - passing in the user to see what posts they liked
@@ -76,12 +74,45 @@ def new_post(request):
             instance.user = request.user
             instance.save()
             #get post from database
-            post = Post.objects.get(id=instance.id)
+            post = Post.objects.filter(id=instance.id).annotate(
+                num_likes=Count('likes'),
+                user_liked=Case(
+                    When(likes=request.user, then=True),
+                    default=False,
+                    output_field=BooleanField(),
+                ),
+                username=F('user__username')
+            ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username').first()
+            #convert queryset to a dict, so we can serialise it
+            if post is not None:
+                post_dict = {
+                    'id': post['id'],
+                    'post': post['post'],
+                    'timestamp': post['timestamp'].strftime('%b %d %Y, %I:%M %p'),
+                    'num_likes': post['num_likes'],
+                    'user_liked': post['user_liked'],
+                    'username': post['username']
+                }
+                return JsonResponse({"message": "Posted succesfully", 'post': post_dict }, status=201)
+        else:
+            return JsonResponse({'error': 'Post not found.'}, status=404)
+
+
+
+
+
+
+
+
+            print(post)
+            print(type(post))
+            
+            
             # extract timestamp and save to varaible as modeltodict doesnt render it so we need to add later
-            timestamp = post.timestamp
+            #timestamp = post.timestamp
             #use model to dict so we can send the instance dict in json response
-            post = model_to_dict(post)
-            post['timestamp'] = timestamp
+            #post = model_to_dict(post)
+            #post['timestamp'] = timestamp
             #send json response
             return JsonResponse({"message": "Posted succesfully", 'post': post }, status=201)
 

@@ -16,24 +16,33 @@
         {% for post in posts %}
             <div class="post-group">
                 <div class="left-post"> 
-                    <p>{{post.user_name}} </p>
-
+                    <p>{{post.username}} </p>
+                    <p class="time-post"> {{post.timestamp}}</p>
                 </div>
                 <div class="right-post">
-                    <p class="post-post"> {{post.post}} {{post.timestamp}}</p>
-                    <p class="time-post"> {{post.timestamp}}</p>
-                    <p> <span class="liked" {% if post.user_liked %} hidden {% endif %}> heart </span> {{post.like_count}} </p>
+                    <p class="post-post"> {{post.post}}</p>
+                    <p 
+                    {% if post.user_liked == True %} 
+                        class="user-liked likes"
+                    {% else %}
+                        class="user-disliked likes"
+                    {% endif %}>
+                    <i class="fa fa-heart"></i>
+                    {% if post.num_likes > 0 %} 
+                    <span>({{post.num_likes}})</span>
+                    {% endif %}
+                    </p>
                 </div>
             </div>
         {% endfor %}
     </section>
 
-    {% if prev_page == True %}
-        <button class="load-posts" data-page-direction="Previous">Previous</button> 
-    {% endif %}
+
+    <button class="load-posts prev-btn" hidden data-page-direction="Previous">Previous</button> 
+
 
     {% if next_page == True %}
-        <button class="load-posts" data-page-direction="Next">Next</button>
+        <button class="load-posts next-btn" data-page-direction="Next">Next</button>
     {% endif %}
 
    
