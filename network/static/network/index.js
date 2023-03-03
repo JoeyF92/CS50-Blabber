@@ -40,55 +40,75 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadPost(e)
     {
         //check if user loading next or previous posts
+        console.log(e.target.dataset.pageDirection)
         if(e.target.dataset.pageDirection === 'Next'){
             pageCount ++;
+            var postType = 'Next';
         }
         else if(e.target.dataset.pageDirection === 'Previous'){
             pageCount --;
+            var postType = 'Prev';
         }
         //fetch requested page of posts
         fetch('/load_post/' + pageCount)
         .then(response => response.json())
         .then(data => {
-
             // trigger animation to hide posts
-            removePosts = document.querySelectorAll('.post-group');
+            let removePosts = document.querySelectorAll('.post-group');
+            if (postType === 'Next') {
+                removePosts.forEach(item => {
+                    item.className = '';
+                    item.classList.add('post-group');
+                    item.classList.add('remove-posts-left');   
+                });
+            } else if (postType === 'Prev') {
+                removePosts.forEach(item => {
+                    item.className = '';
+                    item.classList.add('post-group');
+                    item.classList.add('remove-posts-right'); 
+                });
+            }
+            //set one second timeout to allow animation to run before next steps.          
+            setTimeout(() => 
+            {
+                //delete the current page of posts on the page
+                removePosts.forEach(item => item.remove());
+                //add new posts to the page
+                for (i = 0; i <10; i++){
+                    let post = data.posts[i].post;
+                    let timestamp = data.posts[i].timestamp;
+                    let username = data.posts[i].username;
+                    let userLiked = data.posts[i].user_liked;
+                    let numLikes = data.posts[i].num_likes;
+                    let newPost = createPost(post, timestamp, username, userLiked, numLikes, postType);
+                }
+                //check if there is a next or previous page we can load, and show buttons accordingly
+                prevButton = document.querySelector('.prev-btn')
+                nextButton = document.querySelector('.next-btn')
+                if( data.prev_page === true){
+                    prevButton.disabled = false;
+                }
+                else
+                {
+                    prevButton.disabled = true;
+                }
+                if( data.next_page === true){
+                    nextButton.disabled = false;
+                }
+                else
+                {
+                    nextButton.disabled = true;
+                }                   
+
+                }, 1000)
             
-            //delete all posts on page - first start animation
-            //removePosts.forEach(item => item.style.animationPlayState = 'running')
-            //then after 1 second, remove the items
-            removePosts.forEach(item => item.remove());
-            //add new posts to the page
-            for (i = 0; i <10; i++){
-                let post = data.posts[i].post;
-                let timestamp = data.posts[i].timestamp;
-                let username = data.posts[i].username;
-                let userLiked = data.posts[i].user_liked;
-                let numLikes = data.posts[i].num_likes;
-                let postType = 'Next'
-                let newPost = createPost(post, timestamp, username, userLiked, numLikes, postType);
-            }
-            prevButton = document.querySelector('.prev-btn')
-            nextButton = document.querySelector('.next-btn')
-            if( data.prev_page === true){
-                prevButton.hidden = false;
-            }
-            else
-            {
-                prevButton.hidden = true;
-            }
-            if( data.next_page === true){
-                nextButton.hidden = false;
-            }
-            else
-            {
-                nextButton.hidden = true;
-            }                   
+            
         })
     }
 
     function createPost(post, timestamp, username, userLiked, numLikes, postType){
         let postSection = document.querySelector('.post-section');
+        console.log('heyhey')
         //create a new post, adding in the information from the function params
         let postGroup = document.createElement('div');
   
@@ -137,9 +157,19 @@ document.addEventListener('DOMContentLoaded', function() {
             textbox.value = '';
             console.log('in here')
         }
-        else
+        else if ( postType === 'Next')
         {
-            postGroup.classList.add('post-group', 'loaded-next-posts' );
+            postGroup.className = '';
+            postGroup.classList.add('post-group');
+            postGroup.classList.add('loaded-prev-posts');   
+            postSection.append(postGroup);
+
+        }
+        else if ( postType === 'Prev')
+        {
+            postGroup.className = '';
+            postGroup.classList.add('post-group');
+            postGroup.classList.add('loaded-next-posts');   
             postSection.append(postGroup);
 
         }

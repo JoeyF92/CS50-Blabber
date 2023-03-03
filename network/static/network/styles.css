@@ -15,6 +15,22 @@ p {
   animation: grow 1s;
 }
 
+.remove-posts-left {
+  animation: hide-posts-left 1s;
+}
+
+.remove-posts-right {
+  animation: hide-posts-right 1s;
+}
+
+.loaded-next-posts {
+  animation: load-posts-right 1s;
+}
+
+.loaded-prev-posts {
+  animation: load-posts-left 1s;
+}
+
 .post-group {
   display: flex;
   width: 80vw;
@@ -60,6 +76,13 @@ p {
   animation: like 0.5s;
 }
 
+.buttons {
+  text-align: center;
+}
+.buttons .load-posts {
+  margin: 2rem 0.25rem 2rem 0.25rem;
+}
+
 @keyframes like {
   from {
     color: rgb(189, 189, 189);
@@ -88,20 +111,40 @@ p {
     transform: translateY(0);
   }
 }
-@keyframes hide-posts {
+@keyframes hide-posts-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+}
+@keyframes hide-posts-right {
   from {
     opacity: 1;
     transform: translateX(0);
   }
   to {
     opacity: 0;
-    transform: translateX(-100%);
+    transform: translateX(100%);
   }
 }
-@keyframes load-posts {
+@keyframes load-posts-left {
   from {
     opacity: 0;
     transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes load-posts-right {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
   }
   to {
     opacity: 1;

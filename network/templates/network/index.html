@@ -37,14 +37,14 @@
         {% endfor %}
     </section>
 
+    <div class="buttons">
+        <button class="load-posts prev-btn" disabled data-page-direction="Previous">Previous</button> 
 
-    <button class="load-posts prev-btn" hidden data-page-direction="Previous">Previous</button> 
 
-
-    {% if next_page == True %}
-        <button class="load-posts next-btn" data-page-direction="Next">Next</button>
-    {% endif %}
-
+        {% if next_page == True %}
+            <button class="load-posts next-btn" data-page-direction="Next">Next</button>
+        {% endif %}
+    </div>
    
     
 {% endblock %}

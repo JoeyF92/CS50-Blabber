@@ -1,4 +1,4 @@
-from django.forms import ModelForm, TextInput
+from django.forms import ModelForm, Textarea
 from network.models import Post
 
 
@@ -8,9 +8,10 @@ class NewPostForm(ModelForm):
         fields = '__all__'
         exclude = ['user', 'likes', 'timestamp']
         widgets = {            
-            'post': TextInput(attrs={
+            'post': Textarea(attrs={
                 'class': "form-control",
                 'style': 'width: 100%',
+                'rows': 3,
             })
         }
     # to remove the forms label:    
