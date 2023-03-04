@@ -114,8 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function likePost(e){
         const parent = e.target.parentNode;
+        //get the posts id 
         const postId  = parent.parentNode.querySelector('.post-id').innerHTML
-        console.log(postId)
         //to unlike the post
         if (parent.classList.contains('user-liked')) {
             likeApi('dislike', postId);
@@ -127,9 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function likeApi(action, postId){
-        url = action === 'like' ? "likes/like" : "likes/dislike";
-        console.log(url);
-        //fetch('url' + postId)
+        action = action === 'like' ? "likes/like" : "likes/dislike";
+        console.log(action);
+        //fetch(url + '/' + postId)
         //.then(response => response.json())
         //.then(data => {
 

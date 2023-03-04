@@ -11,6 +11,9 @@ class Post(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, related_name="users_post")
     timestamp = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField("User", blank=True, related_name="liked_by")
+
+    class Meta:
+        ordering = ['-timestamp']
     
     def serialize(self):
         return {
@@ -18,8 +21,7 @@ class Post(models.Model):
             "post": self.post,
             "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
         }
-    
-    
+       
     
     def __str__(self):
         return f"Post: {self.id}"
