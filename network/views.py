@@ -18,20 +18,31 @@ from django.db.models import Count, Case, When, BooleanField, F
 def paginated_post(page_number, user=None):
     #query for extracting all posts. use annotate and count to work out number of likes per post, and then case to work out if current user liked each post 
     all_posts = Post.objects.annotate(
-        num_likes=Count('likes'),
-        user_liked=Case(
-            When(likes=user, then=True),
-            default=False,
-            output_field=BooleanField(),
-        ),
-        username=F('user__username')
-        ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username').order_by("-timestamp")
+    num_likes=Count('likes'),
+    user_liked=Case(
+        When(likes=user, then=True),
+        default=False,
+        output_field=BooleanField(),
+    ),
+    username=F('user__username')
+    ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username').order_by("-timestamp")
     
     #paginate all_posts and select page requested
-    paginator = Paginator(all_posts, 10, orphans=4)
+    paginator = Paginator(all_posts, 10)
     page_obj = paginator.page(page_number)
     #get list of objects for current page
     posts = page_obj.object_list
+
+    #remove any duplicates- (seems to be an issue the complex query-in relation to liked posts):
+    post_ids = set()
+    unique_posts = []
+
+    for post in posts:
+        if post['id'] not in post_ids:
+            post_ids.add(post['id'])
+            unique_posts.append(post)
+
+    posts = unique_posts
 
     #convert datetime object into readable string
     for post in posts:
@@ -45,6 +56,7 @@ def paginated_post(page_number, user=None):
         'current_page': page_obj.number,
         'total_pages': paginator.num_pages
     }
+
 
     return data    
 
@@ -116,6 +128,10 @@ def new_post(request):
             #send json response
             return JsonResponse({"message": "Posted succesfully", 'post': post }, status=201)
 
+def likes(request, post_id,action):
+    post = Post.objects.get(id=post_id)
+    print(post)
+    return false
 
 
 def login_view(request):

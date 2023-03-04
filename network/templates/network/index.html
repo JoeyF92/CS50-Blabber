@@ -21,6 +21,7 @@
                 </div>
                 <div class="right-post">
                     <p class="post-post"> {{post.post}}</p>
+                    <p class="post-id" hidden> {{post.id}} </p>
                     <p 
                     {% if post.user_liked == True %} 
                         class="user-liked likes"
@@ -29,7 +30,7 @@
                     {% endif %}>
                     <i class="fa fa-heart"></i>
                     {% if post.num_likes > 0 %} 
-                    <span>({{post.num_likes}})</span>
+                    <span class="num-likes">({{post.num_likes}})</span>
                     {% endif %}
                     </p>
                 </div>
@@ -39,11 +40,7 @@
 
     <div class="buttons">
         <button class="load-posts prev-btn" disabled data-page-direction="Previous">Previous</button> 
-
-
-        {% if next_page == True %}
-            <button class="load-posts next-btn" data-page-direction="Next">Next</button>
-        {% endif %}
+        <button class="load-posts next-btn" {% if next_page == False %} disabled  {% endif %} data-page-direction="Next">Next</button>
     </div>
    
     

@@ -5,9 +5,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.querySelector('form').addEventListener('submit', e => newPost(e));
         document.querySelectorAll('.load-posts').forEach(item => item.addEventListener('click', e => loadPost(e)));
-
-
+        //event listener for liking post (needs to be function so the listeners are added when new page loaded)
+        likeEventListeners();
     }
+
+    function likeEventListeners() {
+        document.querySelectorAll('.fa-heart').forEach(item => item.addEventListener('click', e => likePost(e)));
+     }
 
     function newPost(e)
     {
@@ -30,8 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let username = result.post.username;
             let userLiked = result.post.user_liked;
             let numLikes = result.post.num_likes;
-            let postType = 'New'
-            let newPost = createPost(post, timestamp, username, userLiked, numLikes, postType);
+            let id = result.post.id;
+            let postType = 'New';
+            let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, postType);
         })
         
         return false;
@@ -73,14 +78,16 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 //delete the current page of posts on the page
                 removePosts.forEach(item => item.remove());
+                
                 //add new posts to the page
-                for (i = 0; i <10; i++){
+                for (i = 0; i < data.posts.length; i++){
                     let post = data.posts[i].post;
                     let timestamp = data.posts[i].timestamp;
                     let username = data.posts[i].username;
                     let userLiked = data.posts[i].user_liked;
+                    let id = data.posts[i].id;
                     let numLikes = data.posts[i].num_likes;
-                    let newPost = createPost(post, timestamp, username, userLiked, numLikes, postType);
+                    let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, postType);
                 }
                 //check if there is a next or previous page we can load, and show buttons accordingly
                 prevButton = document.querySelector('.prev-btn')
@@ -99,16 +106,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     nextButton.disabled = true;
                 }                   
-
-                }, 1000)
-            
-            
+                //add like event listeners:
+                likeEventListeners();
+                }, 1000)              
         })
     }
 
-    function createPost(post, timestamp, username, userLiked, numLikes, postType){
+    function likePost(e){
+        const parent = e.target.parentNode;
+        const postId  = parent.parentNode.querySelector('.post-id').innerHTML
+        console.log(postId)
+        //to unlike the post
+        if (parent.classList.contains('user-liked')) {
+            likeApi('dislike', postId);
+        }
+        //to like the post
+        else{
+            likeApi('like', postId);
+        }
+    }
+
+    function likeApi(action, postId){
+        url = action === 'like' ? "likes/like" : "likes/dislike";
+        console.log(url);
+        //fetch('url' + postId)
+        //.then(response => response.json())
+        //.then(data => {
+
+
+    }
+
+    function createPost(post, timestamp, username, id, userLiked, numLikes, postType){
         let postSection = document.querySelector('.post-section');
-        console.log('heyhey')
         //create a new post, adding in the information from the function params
         let postGroup = document.createElement('div');
   
@@ -130,22 +159,30 @@ document.addEventListener('DOMContentLoaded', function() {
         postP.classList.add('post-post');
         postP.innerHTML = post;
 
+        let idP = document.createElement('p');
+        idP.classList.add('post-id');
+        idP.innerHTML = id;
+        idP.hidden = true;
+
         let likeP = document.createElement('p');
-        likeP.classList.add('likes');
         if(userLiked === true){
             likeP.classList.add('user-liked');
         }
         else{
             likeP.classList.add('user-disliked');
         }
+        likeP.classList.add('likes');
         let heart = document.createElement('i');
         heart.classList.add('fa');
         heart.classList.add('fa-heart');
         likeP.append(heart);
+        let span = document.createElement('span');
+        span.classList.add('num-likes');
         if(numLikes > 0){
-            likeP.innerHTML  = '(' + numLikes + ')';
+            span.innerHTML  = ' (' + numLikes + ')';
         }
-        rightPost.append(postP, likeP);
+        likeP.append(heart, span);
+        rightPost.append(postP, idP, likeP);
         postGroup.append(leftPost, rightPost);
 
         //here i add loaded-new-post as an extra class so i can animate it
@@ -153,10 +190,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if( postType === 'New'){
             postGroup.classList.add('post-group', 'loaded-new-post');
             postSection.insertBefore(postGroup, postSection.firstChild);
-            var textbox = document.querySelector('input[name="post"]');
+            //remove the entered text from the input
+            var textbox = document.querySelector('textarea[name="post"]');
             textbox.value = '';
-            console.log('in here')
-        }
+          }
         else if ( postType === 'Next')
         {
             postGroup.className = '';
@@ -174,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         }
      }
+
         
 
     main()
