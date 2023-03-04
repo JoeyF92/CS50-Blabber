@@ -12,15 +12,16 @@ from django.core import serializers
 from .models import User, Post
 from .forms import NewPostForm
 from django.forms.models import model_to_dict
-from django.db.models import Count, Case, When, BooleanField, F
+from django.db.models import Count, Case, When, BooleanField, F, Subquery, OuterRef
 
 
 def paginated_post(page_number, user=None):
-    #query for extracting all posts. use annotate + count to work out number of likes per post
+    # main query for extracting all posts. use annotate + count to work out number of likes per post
     all_posts = Post.objects.annotate(num_likes=Count('likes')).annotate(
-        user_liked=models.Exists(
-            user.liked_by.filter(id=models.Value(user.id), post=models.OuterRef('id'))
-        ),
+    #use the subquery to work out whether user has liked each post
+    user_liked=models.Exists(
+        user.liked.filter(id=OuterRef('pk')).values('id')
+    ),
     username=F('user__username')
     ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
 
@@ -33,6 +34,7 @@ def paginated_post(page_number, user=None):
     #convert datetime object into readable string
     for post in posts:
         print(post['post'] + str(post['num_likes']) )
+        print(post['user_liked'])
         post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
     
     #create a dictionary to send as response. converting posts to a list
