@@ -22,11 +22,7 @@ def paginated_post(page_number, user=None):
             user.liked_by.filter(id=models.Value(user.id), post=models.OuterRef('id'))
         ),
     username=F('user__username')
-    ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked')
-
-    for p in all_posts:
-        print(p['post'])
-
+    ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
 
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10)
@@ -36,6 +32,7 @@ def paginated_post(page_number, user=None):
 
     #convert datetime object into readable string
     for post in posts:
+        print(post['post'] + str(post['num_likes']) )
         post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
     
     #create a dictionary to send as response. converting posts to a list
