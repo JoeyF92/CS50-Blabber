@@ -18,7 +18,7 @@ from django.db.models import Count, Case, When, BooleanField, F, Subquery, Outer
 def paginated_post(page_number, user=None):
     # main query for extracting all posts. use annotate + count to work out number of likes per post
     all_posts = Post.objects.annotate(num_likes=Count('likes')).annotate(
-    #use the subquery to work out whether user has liked each post
+    #use subquery to see if user has liked each post - using reverse relation on the user model
     user_liked=models.Exists(
         user.liked.filter(id=OuterRef('pk')).values('id')
     ),
@@ -118,9 +118,19 @@ def new_post(request):
             return JsonResponse({"message": "Posted succesfully", 'post': post }, status=201)
 
 def likes(request, post_id, action):
+    user = request.user
     post = Post.objects.get(id=post_id)
-    print(post)
-    return false
+    #to dislike post:
+    if post.likes.filter(id=user.id).exists():
+        post.likes.remove(user)
+        post.save()
+        data = {'count': post.likes.all().count(), 'user_liked': False}
+        return JsonResponse(data, status=200)
+    else:
+        post.likes.add(user)
+        post.save()
+        data = {'count': post.likes.all().count(), 'user_liked': True}
+        return JsonResponse(data, status=200)
 
 
 def login_view(request):

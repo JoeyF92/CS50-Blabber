@@ -116,22 +116,48 @@ document.addEventListener('DOMContentLoaded', function() {
         const parent = e.target.parentNode;
         //get the posts id 
         const postId  = parent.parentNode.querySelector('.post-id').innerHTML
+        const likeText = parent.querySelector('span.num-likes');
+        console.log(likeText);
         //to unlike the post
         if (parent.classList.contains('user-liked')) {
-            likeApi('dislike', postId);
+            likeApi('Dislike', postId)
+            .then(res => {
+                parent.classList  = 'user-disliked likes';
+                if(res.count > 0){
+                    likeText.innerHTML = '(' + res.count + ')';
+                }
+                else{
+                    likeText.innerHTML = '';
+                }
+                console.log(res.count);
+
+
+            })
+
         }
         //to like the post
-        else{
-            likeApi('like', postId);
+        else {
+            likeApi('Like', postId)
+            .then(res => {
+                parent.classList  = 'user-liked likes';
+                if(res.count > 0){
+                    likeText.innerHTML = '(' + res.count + ')';
+                }
+                else{
+                    likeText.innerHTML = '';
+                }
+                console.log(res.count);
+            })
         }
     }
 
     function likeApi(action, postId){
-        action = action === 'like' ? "likes/like" : "likes/dislike";
-        console.log(action);
-        //fetch(url + '/' + postId)
-        //.then(response => response.json())
-        //.then(data => {
+        url = 'likes/' + postId + '/' + action;
+        return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+             return data;
+        });
 
 
     }

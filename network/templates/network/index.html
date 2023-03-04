@@ -29,9 +29,7 @@
                         class="user-disliked likes"
                     {% endif %}>
                     <i class="fa fa-heart"></i>
-                    {% if post.num_likes > 0 %} 
-                    <span class="num-likes">({{post.num_likes}})</span>
-                    {% endif %}
+                    <span class="num-likes">{% if post.num_likes > 0 %} ({{post.num_likes}}){% endif %}</span>
                     </p>
                 </div>
             </div>
