@@ -132,6 +132,12 @@ def likes(request, post_id, action):
         data = {'count': post.likes.all().count(), 'user_liked': True}
         return JsonResponse(data, status=200)
 
+# must be logged in 
+def following(request, user):
+    pass
+
+def profile(request,user):
+    pass
 
 def login_view(request):
     if request.method == "POST":

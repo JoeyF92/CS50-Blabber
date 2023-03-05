@@ -117,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
         //get the posts id 
         const postId  = parent.parentNode.querySelector('.post-id').innerHTML
         const likeText = parent.querySelector('span.num-likes');
-        console.log(likeText);
         //to unlike the post
         if (parent.classList.contains('user-liked')) {
             likeApi('Dislike', postId)
