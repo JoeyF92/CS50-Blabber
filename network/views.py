@@ -9,21 +9,34 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core import serializers
 
-from .models import User, Post
+from .models import User, Post, Follow
 from .forms import NewPostForm
 from django.forms.models import model_to_dict
 from django.db.models import Count, Case, When, BooleanField, F, Subquery, OuterRef
 
 
-def paginated_post(page_number, user=None):
-    # main query for extracting all posts. use annotate + count to work out number of likes per post
-    all_posts = Post.objects.annotate(num_likes=Count('likes')).annotate(
-    #use subquery to see if user has liked each post - using reverse relation on the user model
-    user_liked=models.Exists(
+def paginated_post(page_number, user=None, page_type='Index'):
+    #if we're looking on the follow page
+    if page_type == 'Following':
+        # extract the people that the current user is following - using __ to traverse the user foreign key, to retrieve the id
+        following = Follow.objects.filter(user=user).values_list('user_to_follow__id', flat=True)
+        # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
+        all_posts = Post.objects.filter(user__id__in=following).annotate(num_likes=Count('likes')).annotate(
+        user_liked=models.Exists(
         user.liked.filter(id=OuterRef('pk')).values('id')
-    ),
-    username=F('user__username')
-    ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+        ),
+        username=F('user__username')
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+    #else we're looking at the index page
+    else:
+        # main query for extracting all posts. use annotate + count to work out number of likes per post
+        all_posts = Post.objects.annotate(num_likes=Count('likes')).annotate(
+        #use subquery to see if user has liked each post - using reverse relation on the user model
+        user_liked=models.Exists(
+            user.liked.filter(id=OuterRef('pk')).values('id')
+        ),
+        username=F('user__username')
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
 
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10)
@@ -133,10 +146,12 @@ def likes(request, post_id, action):
         return JsonResponse(data, status=200)
 
 # must be logged in 
-def following(request, user):
-    pass
+def following(request):
+    #extract paginated post
+    context = paginated_post(1, request.user, 'Following')
+    return render(request, "network/following.html", context)
 
-def profile(request,user):
+def profile(request, user):
     pass
 
 def login_view(request):
