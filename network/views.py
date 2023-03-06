@@ -17,6 +17,7 @@ from django.db.models import Count, Case, When, BooleanField, F, Subquery, Outer
 
 def paginated_post(page_number, user=None, page_type='Index'):
     #if we're looking on the follow page
+    print(page_type)
     if page_type == 'Following':
         # extract the people that the current user is following - using __ to traverse the user foreign key, to retrieve the id
         following = Follow.objects.filter(user=user).values_list('user_to_follow__id', flat=True)
@@ -25,8 +26,9 @@ def paginated_post(page_number, user=None, page_type='Index'):
         user_liked=models.Exists(
         user.liked.filter(id=OuterRef('pk')).values('id')
         ),
-        username=F('user__username')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+        username=F('user__username'),
+        userid=F('user__id')
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid').order_by("-timestamp")
     #else if we're looking at a profile page
     elif page_type == 'Profile':
         # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
@@ -34,8 +36,9 @@ def paginated_post(page_number, user=None, page_type='Index'):
         user_liked=models.Exists(
         user.liked.filter(id=OuterRef('pk')).values('id')
         ),
-        username=F('user__username')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+        username=F('user__username'),
+        userid=F('user__id')
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid').order_by("-timestamp")
     #else we're looking at the index page
     else:
         # main query for extracting all posts. use annotate + count to work out number of likes per post
@@ -44,8 +47,9 @@ def paginated_post(page_number, user=None, page_type='Index'):
         user_liked=models.Exists(
             user.liked.filter(id=OuterRef('pk')).values('id')
         ),
-        username=F('user__username')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+        username=F('user__username'),
+        userid=F('user__id')
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid').order_by("-timestamp")
 
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10)
@@ -79,9 +83,9 @@ def index(request):
     context['form'] = form  
     return render(request, "network/index.html", context)
 
-def load_post(request, page):
+def load_post(request, page, page_type):
     #extract paginated post for the requested page - passing in the user to see what posts they liked
-    data = paginated_post(page, request.user)
+    data = paginated_post(page, request.user, page_type)
     return JsonResponse(data, safe=False, status=200)
 
 def new_post(request):
@@ -160,10 +164,17 @@ def following(request):
     context = paginated_post(1, request.user, 'Following')
     return render(request, "network/following.html", context)
 
-def profile(request):
+def profile(request, user_id):
+    #get user from user_id
+    user = User.objects.get(id=user_id)
     #extract paginated post
-    context = paginated_post(1, request.user, 'Profile')
-    return render(request, "network/following.html", context)
+    context = paginated_post(1, user, 'Profile')
+    #if we're looking at the current users profile, load the new post form
+    if user_id == request.user.id:
+        print('madeit')
+        form = NewPostForm()
+        context['form'] = form 
+    return render(request, "network/profile.html", context)
 
 def login_view(request):
     if request.method == "POST":
@@ -215,3 +226,11 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "network/register.html")
+
+
+#how to do load posts on the other pages
+#how to edit and delete posts - think about adding 'edited' and how to animate it
+#style nicely , add headers and user info on user page
+#sort out log in authentication
+#functionality when not logged in = ie things like liking stuff
+#probably only need one html

@@ -3,10 +3,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function main(){
 
-        document.querySelector('form').addEventListener('submit', e => newPost(e));
+        if(document.querySelector('form')){
+            document.querySelector('form').addEventListener('submit', e => newPost(e));
+        }
         document.querySelectorAll('.load-posts').forEach(item => item.addEventListener('click', e => loadPost(e)));
         //event listener for liking post (needs to be function so the listeners are added when new page loaded)
-        likeEventListeners();
+        likeEventListeners();        
     }
 
     function likeEventListeners() {
@@ -44,6 +46,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadPost(e)
     {
+        //determine what page type we're on:
+        const url = window.location.href
+        console.log(url)
+        console.log(url.indexOf('profile'))
+        let pageType;
+        if(url.indexOf("profile") !== -1){
+            pageType = 'Profile';
+        }
+        else if(url.indexOf("following") !== -1){
+            pageType = 'Following';
+        }
+        else{
+            pageType = 'Index';
+        }
         //check if user loading next or previous posts
         console.log(e.target.dataset.pageDirection)
         if(e.target.dataset.pageDirection === 'Next'){
@@ -55,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var postType = 'Prev';
         }
         //fetch requested page of posts
-        fetch('/load_post/' + pageCount)
+        fetch('/load_post/' + pageCount + '/' + pageType)
         .then(response => response.json())
         .then(data => {
             // trigger animation to hide posts
