@@ -1,0 +1,53 @@
+{% extends "network/layout.html" %}
+
+
+{% block body %}
+
+
+    <section>
+        <p> profile info goes here</p>
+    </section>
+
+
+
+    <section>
+        <form action="{% url 'new_post' %}" method="post">
+            {% csrf_token %}
+            {{form}}
+            <button type="submit" class="btn btn-light new-post">Post</button>
+        </form>
+    </section>
+   
+ 
+
+    <section class="post-section">   
+        {% for post in posts %}
+            <div class="post-group">
+                <div class="left-post"> 
+                    <p>{{post.username}} </p>
+                    <p class="time-post"> {{post.timestamp}}</p>
+                </div>
+                <div class="right-post">
+                    <p class="post-post"> {{post.post}}</p>
+                    <p class="post-id" hidden>{{post.id}}</p>
+                    <p 
+                    {% if post.user_liked == True %} 
+                        class="user-liked likes"
+                    {% else %}
+                        class="user-disliked likes"
+                    {% endif %}>
+                    <i class="fa fa-heart"></i>
+                    <span class="num-likes">{% if post.num_likes > 0 %} ({{post.num_likes}}){% endif %}</span>
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </section>
+
+    <div class="buttons">
+        <button class="load-posts prev-btn" disabled data-page-direction="Previous">Previous</button> 
+        <button class="load-posts next-btn" {% if next_page == False %} disabled  {% endif %} data-page-direction="Next">Next</button>
+    </div>
+   
+    
+{% endblock %}

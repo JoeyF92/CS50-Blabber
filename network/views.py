@@ -27,6 +27,15 @@ def paginated_post(page_number, user=None, page_type='Index'):
         ),
         username=F('user__username')
         ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
+    #else if we're looking at a profile page
+    elif page_type == 'Profile':
+        # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
+        all_posts = Post.objects.filter(user=user).annotate(num_likes=Count('likes')).annotate(
+        user_liked=models.Exists(
+        user.liked.filter(id=OuterRef('pk')).values('id')
+        ),
+        username=F('user__username')
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked').order_by("-timestamp")
     #else we're looking at the index page
     else:
         # main query for extracting all posts. use annotate + count to work out number of likes per post
@@ -151,8 +160,10 @@ def following(request):
     context = paginated_post(1, request.user, 'Following')
     return render(request, "network/following.html", context)
 
-def profile(request, user):
-    pass
+def profile(request):
+    #extract paginated post
+    context = paginated_post(1, request.user, 'Profile')
+    return render(request, "network/following.html", context)
 
 def login_view(request):
     if request.method == "POST":
