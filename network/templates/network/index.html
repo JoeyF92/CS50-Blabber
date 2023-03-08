@@ -2,6 +2,9 @@
 
 
 {% block body %}
+
+    
+
     <section>
         <form action="{% url 'new_post' %}" method="post">
             {% csrf_token %}
@@ -9,8 +12,7 @@
             <button type="submit" class="btn btn-light new-post">Post</button>
         </form>
     </section>
-   
- 
+    
 
     <section class="post-section">   
         {% for post in posts %}
@@ -18,10 +20,10 @@
                 <div class="left-post"> 
                     <p><a href="{% url 'profile' user_id=post.userid %}">{{post.username}}</a> </p>
                     
-                    <p class="time-post"> {{post.timestamp}}</p>
+                    <p class="time-post">  {{post.timestamp}}</p>
                 </div>
                 <div class="right-post">
-                    <p class="post-post"> {{post.post}}</p>
+                    <p class="post-post"> {{post.post}} {% if user.id == post.userid %} <a class="edit" data-form-content= {{post.post}} href="javascript:;">Edit</a> {% endif %} </p>
                     <p class="post-id" hidden>{{post.id}}</p>
                     <p 
                     {% if post.user_liked == True %} 
@@ -29,7 +31,7 @@
                     {% else %}
                         class="user-disliked likes"
                     {% endif %}>
-                    <i class="fa fa-heart"></i>
+                    <i class="fa fa-heart"></i>                  
                     <span class="num-likes">{% if post.num_likes > 0 %} ({{post.num_likes}}){% endif %}</span>
                     </p>
                 </div>

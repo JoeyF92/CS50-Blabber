@@ -7,6 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('form').addEventListener('submit', e => newPost(e));
         }
         document.querySelectorAll('.load-posts').forEach(item => item.addEventListener('click', e => loadPost(e)));
+
+        
+        //event listener for if user wants to edit post
+        if(document.querySelector('.edit')){
+            document.querySelectorAll('.edit').forEach(item => item.addEventListener('click', e => editPost(e)));
+        }
+
         //event listener for liking post (needs to be function so the listeners are added when new page loaded)
         likeEventListeners();        
     }
@@ -14,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function likeEventListeners() {
         document.querySelectorAll('.fa-heart').forEach(item => item.addEventListener('click', e => likePost(e)));
      }
+
+
 
     function newPost(e)
     {
@@ -253,7 +262,85 @@ document.addEventListener('DOMContentLoaded', function() {
         }
      }
 
+    
+    function editPost(e){
+        // create a text box
+        const id = e.target.parentNode.parentNode.querySelector('.post-id').innerHTML;
+        let div = document.createElement("div");
+        //blur everything outside the text box 
+        let body = document.querySelector('body');
+        let postSection = document.querySelector('.body');
+        postSection.classList = 'blur-section';
+        div.classList = "edit-box";
+   
+        //create form, loaded with current post text inside
+        const form = document.createElement("form");
+        form.method ="POST";
+        form.action = "{% url 'edit_post' %}";
         
+        const label = document.createElement("label");
+        label.for = "postInput";
+        label.textContent = "Edit Post:";
+        label.style.display = "block";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = "postInput";
+        input.name = "post";
+        input.style.width = "70%";
+        input.placeholder = e.target.dataset.formContent;
+
+        const editButton = document.createElement("button");
+        editButton.type = "submit";
+        editButton.textContent = "Submit";
+        editButton.dataset.id = id;
+
+        const formP = document.createElement("p");
+        formP.innerHTML = "or delete entirely?";
+        formP.style.display = "block";
+        formP.style.margin = "0.5rem 0.5rem 0.5rem auto";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "submit";
+        deleteButton.textContent = "Delete";
+        deleteButton.dataset.id = id;
+
+        const xBox = document.createElement('i');
+        xBox.classList ='fa fa-times';
+
+        form.append(label, input, editButton, formP, deleteButton);
+        div.append(form, xBox);
+        body.append(div);
+        
+        //listen for user clicking 'x'
+        xBox.addEventListener('click', function(){
+            div.remove();
+            postSection.classList = 'body';            
+        })
+
+        //listen for user submitting edit
+        editButton.addEventListener('click', e => editFetch(e));
+
+        //listen for user deleting post
+        deleteButton.addEventListener('click', e => deleteFetch(e));
+       
+    }
+
+    function editFetch(e){
+        e.preventDefault()
+        let postId = e.target.dataset.id;
+        console.log(postId)
+        return false;
+    }
+
+    function deleteFetch(e){
+        e.preventDefault()
+        let postId = e.target.dataset.id;
+        console.log(postId)
+        return false;
+    }
+
+
 
     main()
 

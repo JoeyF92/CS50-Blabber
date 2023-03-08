@@ -164,6 +164,13 @@ def following(request):
     context = paginated_post(1, request.user, 'Following')
     return render(request, "network/following.html", context)
 
+def edit_post(request, post_id):
+    #check user owns the post
+    post = Post.objects.get(id=post_id)
+    print(post)
+
+    #then edit the post
+
 def profile(request, user_id):
     #get user from user_id
     user = User.objects.get(id=user_id)

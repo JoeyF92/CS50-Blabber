@@ -107,6 +107,40 @@ p{
 }
 
 
+.edit-box{
+    margin: auto;
+    margin-left: 9%;
+    position: fixed;
+    width : 80vw;
+    height: 12rem;
+    top: 50%;
+    filter: none;
+    border: 2px solid rgb(221, 218, 218);
+    border-radius: 1%;
+    box-shadow: 1px 1px 3px rgb(233, 226, 226);
+    form{
+        margin-top: 0.5rem;
+        text-align: center;
+        input{
+            margin: 0.5rem 0.5rem 0.5rem auto;
+        }
+    }
+    .fa-times{
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+    .fa-times:hover{
+        color:rgb(155, 146, 146);
+        cursor: pointer;
+    }
+       
+}
+
+.blur-section{
+    filter: blur(5px);
+}
+
 
 
 
