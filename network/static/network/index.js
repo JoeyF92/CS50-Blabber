@@ -2,6 +2,8 @@ var pageCount = 1;
 document.addEventListener('DOMContentLoaded', function() {
     //use this for showing messages
     const flashDiv = document.querySelector('.message');
+    let status;
+    let message;
 
     function main(){
         
@@ -340,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //listen for user submitting edit
         editButton.addEventListener('click', e => editFetch(e, div, postSection, origDiv));
         //listen for user deleting post
-        deleteButton.addEventListener('click', e => deleteFetch(e));
+        deleteButton.addEventListener('click', e => deleteFetch(e, div, postSection, origDiv));
        
     }
 
@@ -352,8 +354,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const editInput = e.target.form.querySelector('#postInput').value
         
         let postId = e.target.dataset.id;
-        let status;
-        let message;
         fetch('/edit_post/' + postId,{
             method: 'POST',
             body: new FormData(form),
@@ -364,10 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(text => {
             message = text['message']
-            console.log(message);
-            console.log(status)
             //if post updated, update original div and give success message
-
             if(status ==200){
                 //get the parent node of the edit button clicked, so we can update it
                 let origParent = origDiv.parentNode
@@ -394,12 +391,39 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
 
-    function deleteFetch(e){
+    function deleteFetch(e, div, postSection, origDiv){
         e.preventDefault()
         let postId = e.target.dataset.id;
         fetch('/delete_post/' + postId)
-        console.log(postId)
-        return false;
+        .then(response => {
+            status = response.status
+            return response.json();
+        })
+        .then(text => {
+            message = text['message']
+            //if post deleted in db, remove the post on page
+            if(status ==200){
+                //add class onto post, which will hide the post from the page
+                removeDiv = origDiv.parentNode.parentNode.parentNode
+                removeDiv.classList = "post-group hide-post";
+                //remove edit window and unblur page
+                div.remove();
+                postSection.classList = 'body'; 
+                setTimeout(() => {
+                    removeDiv.remove()
+                }, 1000)
+                //flash message
+                successMessage(message);
+            }
+            else{
+                //remove edit window and unblur page
+                div.remove();
+                postSection.classList = 'body';
+                //flash message
+                errorMessage(message);
+            }
+        return false
+        })
     }
 
     function successMessage(message){

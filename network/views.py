@@ -192,11 +192,12 @@ def edit_post(request, post_id):
 
 def delete_post(request, post_id):
     #check user owns the post
-    post = Post.objects.get(id=post_id, user=request.user)
-    print(post)
-
-    #then edit the post
-    pass
+    try:
+        post = Post.objects.get(id=post_id, user=request.user)
+    except Post.DoesNotExist:
+        return JsonResponse({"message": "Either post not found or you don't have permission to delete it."}, status=404)
+    post_delete = post.delete()
+    return JsonResponse({"message": "Post Deleted Successfully."}, status=200)
 
 
 def profile(request, user_id):
@@ -265,6 +266,7 @@ def register(request):
 
 #how to do load posts on the other pages
 #add edited to post, then finish front end for an edited post
+#better error handle my code
 #how to edit and delete posts - think about adding 'edited' and how to animate it
 #style nicely , add headers and user info on user page
 #sort out log in authentication
