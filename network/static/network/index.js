@@ -54,9 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
             let username = result.post.username;
             let userLiked = result.post.user_liked;
             let numLikes = result.post.num_likes;
+            let userId = result.post.userid;
             let id = result.post.id;
             let postType = 'New';
-            let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, postType);
+            let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, postType, userId);
         })
         
         return false;
@@ -195,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 
-    function createPost(post, timestamp, username, id, userLiked, numLikes, postType){
+    function createPost(post, timestamp, username, id, userLiked, numLikes, postType, userId){
         let postSection = document.querySelector('.post-section');
         //create a new post, adding in the information from the function params
         let postGroup = document.createElement('div');
@@ -204,7 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
         leftPost.classList.add('left-post');
         
         let userNameP = document.createElement('p');
-        userNameP.innerHTML = username;
+        let userNameLink = document.createElement('a')
+        userNameLink.href = "/profile/" + userId;
+        userNameLink.innerHTML = username;
+        userNameP.append(userNameLink);
 
         let timeP = document.createElement('p');
         timeP.classList.add('time-post');
@@ -216,7 +220,13 @@ document.addEventListener('DOMContentLoaded', function() {
         rightPost.classList.add('right-post');
         let postP = document.createElement('p');
         postP.classList.add('post-post');
-        postP.innerHTML = post;
+        postP.innerHTML = post + ' ';
+        postPEdit = document.createElement('a');
+        postPEdit.setAttribute("data-form-content", post);
+        postPEdit.href = "javascript:;"
+        postPEdit.innerHTML = "Edit";
+        postPEdit.classList = "edit"
+        postP.append(postPEdit);
 
         let idP = document.createElement('p');
         idP.classList.add('post-id');
@@ -269,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             postSection.append(postGroup);
 
         }
+        editClick();
      }
 
     

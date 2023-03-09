@@ -108,8 +108,9 @@ def new_post(request):
                     default=False,
                     output_field=BooleanField(),
                 ),
-                username=F('user__username')
-            ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username').first()
+                username=F('user__username'),
+                userid=F('user__id')
+            ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username', 'userid').first()
             #convert queryset to a dict, so we can serialise it
             if post is not None:
                 post_dict = {
@@ -118,7 +119,8 @@ def new_post(request):
                     'timestamp': post['timestamp'].strftime('%b %d %Y, %I:%M %p'),
                     'num_likes': post['num_likes'],
                     'user_liked': post['user_liked'],
-                    'username': post['username']
+                    'username': post['username'],
+                    'userid': post['userid'],
                 }
                 return JsonResponse({"message": "Posted succesfully", 'post': post_dict }, status=201)
         else:
@@ -195,7 +197,7 @@ def delete_post(request, post_id):
     try:
         post = Post.objects.get(id=post_id, user=request.user)
     except Post.DoesNotExist:
-        return JsonResponse({"message": "Either post not found or you don't have permission to delete it."}, status=404)
+        return JsonResponse({"message": "Either Post not found or you don't have permission to delete it."}, status=404)
     post_delete = post.delete()
     return JsonResponse({"message": "Post Deleted Successfully."}, status=200)
 
@@ -263,12 +265,11 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-
-#how to do load posts on the other pages
-#add edited to post, then finish front end for an edited post
-#better error handle my code
-#how to edit and delete posts - think about adding 'edited' and how to animate it
-#style nicely , add headers and user info on user page
-#sort out log in authentication
-#functionality when not logged in = ie things like liking stuff
-#probably only need one html
+#do the edited functionality
+#why doesnt edit and links show on making new post?
+#make sure the features work on the other pages
+#make sure the features work on the loading pages
+#log in functionality- ie what to see if not logged in
+#consolidate new post function into paginated post function? 
+#go through each function, syntax, error handling, conciseness
+#then look at styles, mobile responsiveness
