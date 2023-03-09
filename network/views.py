@@ -165,11 +165,39 @@ def following(request):
     return render(request, "network/following.html", context)
 
 def edit_post(request, post_id):
+    # Composing a new post must be via POST
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    else:
+        # extract form from request
+        form = NewPostForm(request.POST)
+        #check form is valid so we can access cleaned data
+        if form.is_valid():
+            #retrieve post for the posts id
+            post = Post.objects.get(id=post_id)
+            #if the current user owns the post, extra the new content, append to post and save
+            if post.user == request.user:
+                post.post = form.cleaned_data['post']
+                post.save()
+                return JsonResponse({"message": "Post updated successfully."}, status=200)
+            else:
+                # Return an error response if the user doesn't own the post
+                return JsonResponse({"error": "You don't have permission to edit this post."}, status=403)
+        else:
+            # Return a validation error if the form is invalid
+            errors = form.errors.as_json()
+            return JsonResponse({"error": errors}, status=400, content_type='application/json')
+
+
+
+def delete_post(request, post_id):
     #check user owns the post
-    post = Post.objects.get(id=post_id)
+    post = Post.objects.get(id=post_id, user=request.user)
     print(post)
 
     #then edit the post
+    pass
+
 
 def profile(request, user_id):
     #get user from user_id
@@ -236,6 +264,7 @@ def register(request):
 
 
 #how to do load posts on the other pages
+#add edited to post, then finish front end for an edited post
 #how to edit and delete posts - think about adding 'edited' and how to animate it
 #style nicely , add headers and user info on user page
 #sort out log in authentication

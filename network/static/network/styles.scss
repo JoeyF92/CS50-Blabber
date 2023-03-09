@@ -1,3 +1,30 @@
+%message {
+    font-family: sans-serif;
+    font-size: 18px;
+    text-align: center;
+    color: #FFFFFF;
+    animation: message-flash;
+    animation-duration: 0.5s;
+    animation-iteration-count: 4;
+    animation-fill-mode: forwards;
+}
+
+
+.success {
+    @extend %message;
+    background-color: rgba(0, 128, 0, 0.216);
+}
+
+.warning {
+    @extend %message;
+    background-color: rgba(255, 166, 0, 0.216);
+}
+
+.error {
+    @extend %message;
+    background-color: rgba(255, 0, 0, 0.2169);
+}
+
 
 
 form{
@@ -222,4 +249,10 @@ p{
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+@keyframes message-flash{
+    0%{opacity: 1;}
+    60%{opacity: 1;}
+    100%{opacity: 0;}
 }

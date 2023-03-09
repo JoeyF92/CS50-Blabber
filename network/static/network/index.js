@@ -1,7 +1,10 @@
 var pageCount = 1; 
 document.addEventListener('DOMContentLoaded', function() {
+    //use this for showing messages
+    const flashDiv = document.querySelector('.message');
 
     function main(){
+        
 
         if(document.querySelector('form')){
             document.querySelector('form').addEventListener('submit', e => newPost(e));
@@ -10,9 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         
         //event listener for if user wants to edit post
-        if(document.querySelector('.edit')){
-            document.querySelectorAll('.edit').forEach(item => item.addEventListener('click', e => editPost(e)));
-        }
+        editClick();
 
         //event listener for liking post (needs to be function so the listeners are added when new page loaded)
         likeEventListeners();        
@@ -21,6 +22,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function likeEventListeners() {
         document.querySelectorAll('.fa-heart').forEach(item => item.addEventListener('click', e => likePost(e)));
      }
+
+    function editClick(){
+        if(document.querySelector('.edit')){
+            document.querySelectorAll('.edit').forEach(item => item.addEventListener('click', e => editPost(e)));
+        }
+    }
 
 
 
@@ -290,6 +297,15 @@ document.addEventListener('DOMContentLoaded', function() {
         input.style.width = "70%";
         input.placeholder = e.target.dataset.formContent;
 
+        // Get the CSRF token from the cookie
+        const csrfToken = Cookies.get('csrftoken');
+        // Create a hidden input field for the CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+
+
         const editButton = document.createElement("button");
         editButton.type = "submit";
         editButton.textContent = "Submit";
@@ -308,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const xBox = document.createElement('i');
         xBox.classList ='fa fa-times';
 
-        form.append(label, input, editButton, formP, deleteButton);
+        form.append(label, input, csrfInput, editButton, formP, deleteButton);
         div.append(form, xBox);
         body.append(div);
         
@@ -318,28 +334,83 @@ document.addEventListener('DOMContentLoaded', function() {
             postSection.classList = 'body';            
         })
 
-        //listen for user submitting edit
-        editButton.addEventListener('click', e => editFetch(e));
+        //create a variable for the post we're updating/deleting, so we can pass to function and update it on front end
+        const origDiv = e.target
 
+        //listen for user submitting edit
+        editButton.addEventListener('click', e => editFetch(e, div, postSection, origDiv));
         //listen for user deleting post
         deleteButton.addEventListener('click', e => deleteFetch(e));
        
     }
 
-    function editFetch(e){
+    function editFetch(e, div, postSection, origDiv){
         e.preventDefault()
+        // get form from e.target and pass in fetch call 
+        let form =  e.target.form;
+        //get the id of the post, to use for the dynamic url
+        const editInput = e.target.form.querySelector('#postInput').value
+        
         let postId = e.target.dataset.id;
-        console.log(postId)
-        return false;
+        let status;
+        let message;
+        fetch('/edit_post/' + postId,{
+            method: 'POST',
+            body: new FormData(form),
+        })
+        .then(response => {
+            status = response.status
+            return response.json();
+        })
+        .then(text => {
+            message = text['message']
+            console.log(message);
+            console.log(status)
+            //if post updated, update original div and give success message
+
+            if(status ==200){
+                //get the parent node of the edit button clicked, so we can update it
+                let origParent = origDiv.parentNode
+                //update post content to what was typed in
+                origDiv.parentNode.innerHTML = editInput + ' ';
+                //recreate the edit button and append it
+                let edit = document.createElement('a');
+                edit.href = "javascript:;"
+                edit.classList = "edit";
+                edit.innerHTML = "Edit";
+                edit.setAttribute("data-form-content", editInput);
+                origParent.append(edit);
+                //add the event listener back for the edit button
+                editClick();
+                //display success message
+                successMessage(message);
+            }
+            else{
+                //display error message
+                errorMessage(message);
+            }
+            div.remove();
+            postSection.classList = 'body'; 
+        })
     }
 
     function deleteFetch(e){
         e.preventDefault()
         let postId = e.target.dataset.id;
+        fetch('/delete_post/' + postId)
         console.log(postId)
         return false;
     }
 
+    function successMessage(message){
+        flashDiv.innerHTML = message;
+        flashDiv.classList = 'message success';
+    }
+
+    function errorMessage(message){
+        flashDiv.innerHTML = message;
+        flashDiv.classList = 'message error';
+    }
 
 
     main()
