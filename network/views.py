@@ -49,7 +49,7 @@ def paginated_post(page_number, user=None, page_type='Index'):
         ),
         username=F('user__username'),
         userid=F('user__id')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid').order_by("-timestamp")
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited').order_by("-timestamp")
 
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10)
@@ -59,8 +59,6 @@ def paginated_post(page_number, user=None, page_type='Index'):
 
     #convert datetime object into readable string
     for post in posts:
-        print(post['post'] + str(post['num_likes']) )
-        print(post['user_liked'])
         post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
     
     #create a dictionary to send as response. converting posts to a list
@@ -110,7 +108,7 @@ def new_post(request):
                 ),
                 username=F('user__username'),
                 userid=F('user__id')
-            ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username', 'userid').first()
+            ).values('id', 'post', 'timestamp', 'num_likes', 'user_liked', 'username', 'userid', 'edited').first()
             #convert queryset to a dict, so we can serialise it
             if post is not None:
                 post_dict = {
@@ -180,6 +178,7 @@ def edit_post(request, post_id):
             #if the current user owns the post, extra the new content, append to post and save
             if post.user == request.user:
                 post.post = form.cleaned_data['post']
+                post.edited = True
                 post.save()
                 return JsonResponse({"message": "Post updated successfully."}, status=200)
             else:

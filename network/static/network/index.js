@@ -381,13 +381,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 let origParent = origDiv.parentNode
                 //update post content to what was typed in
                 origDiv.parentNode.innerHTML = editInput + ' ';
-                //recreate the edit button and append it
+                //recreate the edit button
                 let edit = document.createElement('a');
                 edit.href = "javascript:;"
                 edit.classList = "edit";
                 edit.innerHTML = "Edit";
                 edit.setAttribute("data-form-content", editInput);
-                origParent.append(edit);
+                //create (edited) span to signal post is an edit
+                edited = document.createElement('span')
+                edited.classList = "edited";
+                edited.innerHTML = "(edited) ";
+                origParent.append(edited, edit);
                 //add the event listener back for the edit button
                 editClick();
                 //display success message

@@ -83,6 +83,10 @@ p {
 .post-group .right-post .post-post {
   padding-top: 0.5rem;
 }
+.post-group .right-post .edited {
+  font-size: 0.6rem;
+  color: rgb(188, 188, 188);
+}
 .post-group .right-post .likes {
   font-size: 0.8rem;
 }

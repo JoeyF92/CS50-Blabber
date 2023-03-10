@@ -23,7 +23,13 @@
                     <p class="time-post">  {{post.timestamp}}</p>
                 </div>
                 <div class="right-post">
-                    <p class="post-post"> {{post.post}} {% if user.id == post.userid %} <a class="edit" data-form-content= {{post.post}} href="javascript:;">Edit</a> {% endif %} </p>
+                    <p class="post-post"> {{post.post}} 
+                        {% if post.edited == True %}
+                            <span class="edited">(edited)</span>
+                        {% endif %}
+                        {% if user.id == post.userid %} 
+                            <a class="edit" data-form-content= {{post.post}} href="javascript:;">Edit</a> 
+                        {% endif %} </p>
                     <p class="post-id" hidden>{{post.id}}</p>
                     <p 
                     {% if post.user_liked == True %} 
