@@ -18,7 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
         editClick();
 
         //event listener for liking post (needs to be function so the listeners are added when new page loaded)
-        likeEventListeners();        
+        likeEventListeners();    
+        
+        //event listener for following users:
+        follow();
     }
 
     function likeEventListeners() {
@@ -29,6 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if(document.querySelector('.edit')){
             document.querySelectorAll('.edit').forEach(item => item.addEventListener('click', e => editPost(e)));
         }
+    }
+
+    function follow(){
+        if(document.querySelector('.follow')){ 
+            document.querySelectorAll('.follow').forEach(item => item.addEventListener('click', e => followUser(e)));
+        }
+
     }
 
 
@@ -447,6 +457,37 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
 
+    function followUser(e){
+        e.preventDefault()
+        let button = e.target
+        followId = e.target.dataset.followId;
+        followAction = e.target.dataset.followAction
+        fetch('/follow/' + followId + '/' + followAction)
+        .then(response => {
+            status = response.status
+            return response.json();
+        })
+        .then(text => {
+            message = text['message']
+            console.log(message)
+            if(status ==200){
+                successMessage(message)
+                if(followAction === 'Follow'){
+                    button.dataset.followAction = 'Unfollow';
+                    button.innerHTML = "Unfollow";
+                }
+                else{
+                    button.dataset.followAction = 'Follow';
+                    button.innerHTML = "Follow";
+                }
+            }
+            else{
+                errorMessage(message)
+            }
+        })
+        return false;
+    }
+
     function successMessage(message){
         flashDiv.innerHTML = message;
         flashDiv.classList = 'message success';
@@ -457,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
         flashDiv.classList = 'message error';
     }
 
+    
 
     main()
 

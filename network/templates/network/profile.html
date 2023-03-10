@@ -9,7 +9,13 @@
                <h4> {{profile.username}} </h4>
             </div>
             <div id="follow-button">
-                <button> Follow </button>
+                {% if user.id != profile.userid %}
+                    {% if profile.user_follows %}
+                        <button class="follow" data-follow-action="Unfollow" data-follow-id="{{profile.userid}}"> Unfollow </button>
+                    {% else %}
+                        <button class="follow" data-follow-action="Follow" data-follow-id="{{profile.userid}}"> Follow </button>
+                    {% endif %}
+                {% endif %}
             </div>  
         </div>
         <div id="follows-div">

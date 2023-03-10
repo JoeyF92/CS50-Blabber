@@ -1,10 +1,11 @@
 import json
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import IntegrityError, models
 from django.http import JsonResponse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect 
+from django.shortcuts import render, redirect, get_object_or_404 
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core import serializers
@@ -101,6 +102,7 @@ def load_post(request, page, page_type):
     data = paginated_post(page, request.user, page_type)
     return JsonResponse(data, safe=False, status=200)
 
+@login_required
 def new_post(request):
     # Composing a new post must be via POST
     if request.method != "POST":
@@ -140,7 +142,7 @@ def new_post(request):
         else:
             return JsonResponse({'error': 'Post not found.'}, status=404)
 
-
+@login_required
 def likes(request, post_id, action):
     user = request.user
     post = Post.objects.get(id=post_id)
@@ -156,12 +158,13 @@ def likes(request, post_id, action):
         data = {'count': post.likes.all().count(), 'user_liked': True}
         return JsonResponse(data, status=200)
 
-# must be logged in 
+@login_required 
 def following(request):
     #extract paginated post
     context = paginated_post(1, request.user, 'Following')
     return render(request, "network/following.html", context)
 
+@login_required
 def edit_post(request, post_id):
     # Composing a new post must be via POST
     if request.method != "POST":
@@ -187,8 +190,7 @@ def edit_post(request, post_id):
             errors = form.errors.as_json()
             return JsonResponse({"error": errors}, status=400, content_type='application/json')
 
-
-
+@login_required
 def delete_post(request, post_id):
     #check user owns the post
     try:
@@ -197,7 +199,6 @@ def delete_post(request, post_id):
         return JsonResponse({"message": "Either Post not found or you don't have permission to delete it."}, status=404)
     post_delete = post.delete()
     return JsonResponse({"message": "Post Deleted Successfully."}, status=200)
-
 
 def profile(request, user_id):
     #get user from user_id
@@ -211,12 +212,31 @@ def profile(request, user_id):
     #get follower and following count for the profile
     following_count = Follow.objects.filter(user = user).count()
     followers_count = Follow.objects.filter(user_to_follow = user).count()
-    context['profile'] = {'username': user.username, 'following_count':following_count, 'followers_count': followers_count}
-    #get following count for the profile
-
-    
+    context['profile'] = {'userid': user.id, 'username': user.username, 'following_count':following_count, 'followers_count': followers_count}
+    #check whether logged in user follows the profile
+    check =  Follow.objects.filter(user = request.user, user_to_follow = user )
+    if check:
+        context['profile']['user_follows']= True   
     return render(request, "network/profile.html", context)
 
+@login_required
+def follow(request, user_id, action):
+    try:
+        user_to_follow = get_object_or_404(User, id=user_id)
+        if action == 'Follow':
+            follow = Follow.objects.create(user=request.user, user_to_follow=user_to_follow)
+            return JsonResponse({"message": "Followed successfully."}, status=200)       
+        else:
+            unfollow = Follow.objects.get(user=request.user, user_to_follow = user_to_follow)
+            unfollow.delete()
+            return JsonResponse({"message": "Unfollowed successfully."}, status=200)       
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found."}, status=404)
+    except Follow.DoesNotExist:
+        return JsonResponse({"error": "Follow not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
 def login_view(request):
     if request.method == "POST":
 
@@ -235,7 +255,6 @@ def login_view(request):
             })
     else:
         return render(request, "network/login.html")
-
 
 def logout_view(request):
     logout(request)
@@ -269,8 +288,7 @@ def register(request):
         return render(request, "network/register.html")
 
 
-#add follow functionality
-#log in functionality- ie what to see if not logged in
+#log in functionality- ie what to see if not logged in, be thorough
 #consolidate new post function into paginated post function? 
 #go through each function, syntax, error handling, conciseness
 #then look at styles, mobile responsiveness
