@@ -27,8 +27,13 @@ def paginated_post(page_number, user=None, page_type='Index'):
         user.liked.filter(id=OuterRef('pk')).values('id')
         ),
         username=F('user__username'),
-        userid=F('user__id')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid').order_by("-timestamp")
+        userid=F('user__id'),
+        is_owner=Case(
+            When(user_id=user.id, then=True),
+            default=False,
+            output_field=BooleanField()
+        )
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
     #else if we're looking at a profile page
     elif page_type == 'Profile':
         # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
@@ -37,8 +42,13 @@ def paginated_post(page_number, user=None, page_type='Index'):
         user.liked.filter(id=OuterRef('pk')).values('id')
         ),
         username=F('user__username'),
-        userid=F('user__id')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid').order_by("-timestamp")
+        userid=F('user__id'),
+        is_owner=Case(
+            When(user_id=user.id, then=True),
+            default=False,
+            output_field=BooleanField()
+        )
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
     #else we're looking at the index page
     else:
         # main query for extracting all posts. use annotate + count to work out number of likes per post
@@ -48,8 +58,13 @@ def paginated_post(page_number, user=None, page_type='Index'):
             user.liked.filter(id=OuterRef('pk')).values('id')
         ),
         username=F('user__username'),
-        userid=F('user__id')
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited').order_by("-timestamp")
+        userid=F('user__id'),
+        is_owner=Case(
+            When(user_id=user.id, then=True),
+            default=False,
+            output_field=BooleanField()
+        )
+        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
 
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10)
@@ -119,29 +134,12 @@ def new_post(request):
                     'user_liked': post['user_liked'],
                     'username': post['username'],
                     'userid': post['userid'],
+                    'is_owner': True,
                 }
                 return JsonResponse({"message": "Posted succesfully", 'post': post_dict }, status=201)
         else:
             return JsonResponse({'error': 'Post not found.'}, status=404)
 
-
-
-
-
-
-
-
-            print(post)
-            print(type(post))
-            
-            
-            # extract timestamp and save to varaible as modeltodict doesnt render it so we need to add later
-            #timestamp = post.timestamp
-            #use model to dict so we can send the instance dict in json response
-            #post = model_to_dict(post)
-            #post['timestamp'] = timestamp
-            #send json response
-            return JsonResponse({"message": "Posted succesfully", 'post': post }, status=201)
 
 def likes(request, post_id, action):
     user = request.user
@@ -264,11 +262,15 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-#do the edited functionality
-#why doesnt edit and links show on making new post?
+
 #make sure the features work on the other pages
-#make sure the features work on the loading pages
+#add follower info on profile page
 #log in functionality- ie what to see if not logged in
 #consolidate new post function into paginated post function? 
 #go through each function, syntax, error handling, conciseness
 #then look at styles, mobile responsiveness
+
+
+#issues:
+#username link undefined on next page
+#edit link is showing on every post- needs to be if current user

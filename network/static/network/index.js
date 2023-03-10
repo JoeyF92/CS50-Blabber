@@ -56,8 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let numLikes = result.post.num_likes;
             let userId = result.post.userid;
             let id = result.post.id;
+            let isOwner = result.post.is_owner;
             let postType = 'New';
-            let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, postType, userId);
+            let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType)
         })
         
         return false;
@@ -122,7 +123,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     let userLiked = data.posts[i].user_liked;
                     let id = data.posts[i].id;
                     let numLikes = data.posts[i].num_likes;
-                    let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, postType);
+                    //so ive got userid - do i have current users id?
+                    let isOwner = data.posts[i].is_owner;
+                    let userId = data.posts[i].userid;
+                    let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType);
                 }
                 //check if there is a next or previous page we can load, and show buttons accordingly
                 prevButton = document.querySelector('.prev-btn')
@@ -196,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     }
 
-    function createPost(post, timestamp, username, id, userLiked, numLikes, postType, userId){
+    function createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType){
         let postSection = document.querySelector('.post-section');
         //create a new post, adding in the information from the function params
         let postGroup = document.createElement('div');
@@ -221,13 +225,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let postP = document.createElement('p');
         postP.classList.add('post-post');
         postP.innerHTML = post + ' ';
-        postPEdit = document.createElement('a');
-        postPEdit.setAttribute("data-form-content", post);
-        postPEdit.href = "javascript:;"
-        postPEdit.innerHTML = "Edit";
-        postPEdit.classList = "edit"
-        postP.append(postPEdit);
-
+        //if current user owns post
+        if(isOwner == true){
+            postPEdit = document.createElement('a');
+            postPEdit.setAttribute("data-form-content", post);
+            postPEdit.href = "javascript:;"
+            postPEdit.innerHTML = "Edit";
+            postPEdit.classList = "edit"
+            postP.append(postPEdit);
+        }
         let idP = document.createElement('p');
         idP.classList.add('post-id');
         idP.innerHTML = id;
