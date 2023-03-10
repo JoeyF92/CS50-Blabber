@@ -77,9 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadPost(e)
     {
         //determine what page type we're on:
-        const url = window.location.href
-        console.log(url)
-        console.log(url.indexOf('profile'))
+        const url = window.location.href;
         let pageType;
         if(url.indexOf("profile") !== -1){
             pageType = 'Profile';
@@ -91,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
             pageType = 'Index';
         }
         //check if user loading next or previous posts
-        console.log(e.target.dataset.pageDirection)
         if(e.target.dataset.pageDirection === 'Next'){
             pageCount ++;
             var postType = 'Next';
