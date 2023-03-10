@@ -206,9 +206,15 @@ def profile(request, user_id):
     context = paginated_post(1, user, 'Profile')
     #if we're looking at the current users profile, load the new post form
     if user_id == request.user.id:
-        print('madeit')
         form = NewPostForm()
-        context['form'] = form 
+        context['form'] = form    
+    #get follower and following count for the profile
+    following_count = Follow.objects.filter(user = user).count()
+    followers_count = Follow.objects.filter(user_to_follow = user).count()
+    context['profile'] = {'username': user.username, 'following_count':following_count, 'followers_count': followers_count}
+    #get following count for the profile
+
+    
     return render(request, "network/profile.html", context)
 
 def login_view(request):
@@ -263,8 +269,7 @@ def register(request):
         return render(request, "network/register.html")
 
 
-#make sure the features work on the other pages
-#add follower info on profile page
+#add follow functionality
 #log in functionality- ie what to see if not logged in
 #consolidate new post function into paginated post function? 
 #go through each function, syntax, error handling, conciseness

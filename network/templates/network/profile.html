@@ -3,8 +3,20 @@
 
 {% block body %}
 
-    <section>
-        <p> profile info goes here</p>
+    <section class="profile-info">
+        <div id="profile-name">
+            <div>
+               <h4> {{profile.username}} </h4>
+            </div>
+            <div id="follow-button">
+                <button> Follow </button>
+            </div>  
+        </div>
+        <div id="follows-div">
+            <p>Follows: {%if profile.following_count > 0 %} {{profile.following_count}} {% else %} 0 {% endif %}</p>
+            <p>Followers: {%if profile.followers_count > 0 %} {{profile.followers_count}} {% else %} 0 {% endif %} </p>
+        </div>
+        
     </section>
 
 
