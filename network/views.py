@@ -17,32 +17,32 @@ from django.db.models import Count, Case, When, BooleanField, F, Subquery, Outer
 
 
 
-def paginated_post(page_number, user=None, page_type='Index'):
+def get_posts(page_number, user=None, page_type='Index', logged_in=False):
     #if we're looking on the follow page
     if page_type == 'Following':
         # extract the people that the current user is following - using __ to traverse the user foreign key, to retrieve the id
         following = Follow.objects.filter(user=user).values_list('user_to_follow__id', flat=True)
         # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
-        all_posts = Post.objects.filter(user__id__in=following)
-        
+        all_posts = Post.objects.filter(user__id__in=following) 
     #else if we're looking at a profile page
     elif page_type == 'Profile':
         #do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
         all_posts = Post.objects.filter(user=user)
-    
     #else we're looking at the index page      
     else:
         all_posts = Post.objects.all()
-    
-    #use annotate + count to work out number of likes per post
+    #annotate all_posts for extra fields, use count to work out number of likes per post
     all_posts = all_posts.annotate(num_likes=Count('likes'),
+        #add username and id field, by traversing user
+        username=F('user__username'),
+        userid=F('user__id'))
+    # annotate extra fields for if the page is viewed by a logged in user
+    if logged_in == True:
+        all_posts = all_posts.annotate(
         #use subquery to see if user has liked each post - using reverse relation on the user model
         user_liked=models.Exists(
             user.liked.filter(id=OuterRef('pk')).values('id')
         ),
-        #add username and id field, which traversing user
-        username=F('user__username'),
-        userid=F('user__id'),
         #add is owner field, which is True is current users id matches the posts id
         is_owner=Case(
             When(user_id=user.id, then=True),
@@ -50,87 +50,10 @@ def paginated_post(page_number, user=None, page_type='Index'):
             output_field=BooleanField()
         )
         #extract values we want to pass through in response and order by timestamp   
-    ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
-
-    #paginate all_posts and select page requested
-    paginator = Paginator(all_posts, 10)
-    page_obj = paginator.page(page_number)
-    #get list of objects for current page
-    posts = page_obj.object_list
-
-    #convert datetime object into readable string
-    for post in posts:
-        post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
-    
-    #create a dictionary to send as response. converting posts to a list
-    data = {
-        'posts' : list(posts),
-        'prev_page': page_obj.has_previous(),
-        'next_page' : page_obj.has_next(),
-        'current_page': page_obj.number,
-        'total_pages': paginator.num_pages
-    }
-
-
-    return data    
-
-
-
-
-
-
-
-
-
-def refactor(page_number, user=None, page_type='Index'):
-    #if we're looking on the follow page
-    if page_type == 'Following':
-        # extract the people that the current user is following - using __ to traverse the user foreign key, to retrieve the id
-        following = Follow.objects.filter(user=user).values_list('user_to_follow__id', flat=True)
-        # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
-        all_posts = Post.objects.filter(user__id__in=following).annotate(num_likes=Count('likes')).annotate(
-        user_liked=models.Exists(
-        user.liked.filter(id=OuterRef('pk')).values('id')
-        ),
-        username=F('user__username'),
-        userid=F('user__id'),
-        is_owner=Case(
-            When(user_id=user.id, then=True),
-            default=False,
-            output_field=BooleanField()
-        )
         ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
-    #else if we're looking at a profile page
-    elif page_type == 'Profile':
-        # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
-        all_posts = Post.objects.filter(user=user).annotate(num_likes=Count('likes')).annotate(
-        user_liked=models.Exists(
-        user.liked.filter(id=OuterRef('pk')).values('id')
-        ),
-        username=F('user__username'),
-        userid=F('user__id'),
-        is_owner=Case(
-            When(user_id=user.id, then=True),
-            default=False,
-            output_field=BooleanField()
-        )
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
-    #else we're looking at the index page
+    #else if not logged in, extract the following fields from all_posts
     else:
-        # main query for extracting all posts. use annotate + count to work out number of likes per post
-        all_posts = Post.objects.annotate(num_likes=Count('likes')).annotate(
-        #use subquery to see if user has liked each post - using reverse relation on the user model
-        user_liked=models.Exists(
-            user.liked.filter(id=OuterRef('pk')).values('id')
-        ),
-        username=F('user__username'),
-        userid=F('user__id'),
-        is_owner=Case(
-            When(user_id=user.id, then=True),
-            default=False,
-            output_field=BooleanField()
-        )
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
+        all_posts = all_posts.values('id', 'post', 'username', 'timestamp', 'num_likes', 'userid', 'edited').order_by("-timestamp")
 
     #paginate all_posts and select page requested
     paginator = Paginator(all_posts, 10)
@@ -150,69 +73,9 @@ def refactor(page_number, user=None, page_type='Index'):
         'current_page': page_obj.number,
         'total_pages': paginator.num_pages
     }
-
-
     return data    
 
-def guest_paginated_post(page_number, user=None, page_type='Index'):
- #if we're looking on the follow page
-    if page_type == 'Following':
-        # extract the people that the current user is following - using __ to traverse the user foreign key, to retrieve the id
-        following = Follow.objects.filter(user=user).values_list('user_to_follow__id', flat=True)
-        # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
-        all_posts = Post.objects.filter(user__id__in=following).annotate(num_likes=Count('likes')).annotate(
-        user_liked=models.Exists(
-        user.liked.filter(id=OuterRef('pk')).values('id')
-        ),
-        username=F('user__username'),
-        userid=F('user__id'),
-        is_owner=Case(
-            When(user_id=user.id, then=True),
-            default=False,
-            output_field=BooleanField()
-        )
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'user_liked', 'userid', 'edited', 'is_owner').order_by("-timestamp")
-    #else if we're looking at a profile page
-    elif page_type == 'Profile':
-        # do a query for all posts, filtering for posts by the user id (traverse the foreign key again)
-        all_posts = Post.objects.filter(user=user).annotate(num_likes=Count('likes')).annotate(
-        username=F('user__username'),
-        userid=F('user__id'),
-        is_owner=Case(
-            When(user_id=user.id, then=True),
-            default=False,
-            output_field=BooleanField()
-        )
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'userid', 'edited').order_by("-timestamp")
-    #else we're looking at the index page
-    else:
-        # main query for extracting all posts. use annotate + count to work out number of likes per post
-        all_posts = Post.objects.annotate(num_likes=Count('likes')).annotate(
-        username=F('user__username'),
-        userid=F('user__id'),
-        ).values('id', 'post', 'username', 'timestamp', 'num_likes', 'userid', 'edited').order_by("-timestamp")
 
-    #paginate all_posts and select page requested
-    paginator = Paginator(all_posts, 10)
-    page_obj = paginator.page(page_number)
-    #get list of objects for current page
-    posts = page_obj.object_list
-
-    #convert datetime object into readable string
-    for post in posts:
-        post['timestamp'] = post['timestamp'].strftime('%b %d %Y, %I:%M %p')
-    
-    #create a dictionary to send as response. converting posts to a list
-    data = {
-        'posts' : list(posts),
-        'prev_page': page_obj.has_previous(),
-        'next_page' : page_obj.has_next(),
-        'current_page': page_obj.number,
-        'total_pages': paginator.num_pages
-    }
-
-
-    return data    
 
 
 
@@ -220,22 +83,22 @@ def index(request):
     #if theres a logged in user
     if request.user.is_authenticated:
         #extract paginated post for page one - passing in the user to see what posts they liked
-        context = paginated_post(1, request.user)
+        context = get_posts(1, request.user, 'Index', logged_in=True)
         #pass in form to allow new posts to be made by user
         form = NewPostForm()
         context['form'] = form
     #else use amended pagination function for none users
     else:
-        context = guest_paginated_post(1, None) 
+        context = get_posts(1, None, 'Index', logged_in=False) 
     return render(request, "network/index.html", context)
 
 def load_post(request, page, page_type):
     if request.user.is_authenticated:
         #extract paginated post for the requested page - passing in the user to see what posts they liked
-        data = paginated_post(page, request.user, page_type)
+        data = get_posts(page, request.user, page_type, logged_in=True)
         data['isloggedin'] = True
     else:
-        data = guest_paginated_post(page, None, page_type)
+        data = get_posts(page, None, page_type, logged_in=False)
         data['isloggedin'] = False
     return JsonResponse(data, safe=False, status=200)
 
@@ -298,8 +161,9 @@ def likes(request, post_id, action):
 @login_required 
 def following(request):
     #extract paginated post
-    context = paginated_post(1, request.user, 'Following')
+    context = get_posts(1, request.user, 'Following', logged_in=True)
     return render(request, "network/following.html", context)
+
 
 @login_required
 def edit_post(request, post_id):
@@ -340,10 +204,12 @@ def delete_post(request, post_id):
 def profile(request, user_id):
     #get user from user_id
     user = User.objects.get(id=user_id)
+    #variable for checking if current user follows the profile
     check = False
+    #if user logged in
     if request.user.is_authenticated:
         #extract paginated post
-        context = paginated_post(1, user, 'Profile')
+        context = get_posts(1, user, 'Profile', logged_in=True)
         #check whether logged in user follows the profile
         check =  Follow.objects.filter(user = request.user, user_to_follow = user )  
         #if we're looking at the current users profile, load the new post form
@@ -352,7 +218,7 @@ def profile(request, user_id):
             context['form'] = form
     else:
         #extract paginated post
-        context = guest_paginated_post(1, user, 'Profile')
+        context = get_posts(1, user, 'Profile', logged_in=False)
     #get follower and following count for the profile
     following_count = Follow.objects.filter(user = user).count()
     followers_count = Follow.objects.filter(user_to_follow = user).count()
@@ -435,16 +301,11 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-#stop being able to click on hearts if not logged in
+
 #when a follow page is blank?
-#{% if user.is_authenticated %}
+#logged out messaging
 #add some error handling for urls that dont exist, or users not logged in or url parameters not there
 #log in functionality- ie what to see if not logged in, be thorough
 #consolidate new post function into paginated post function? 
 #go through each function, syntax, error handling, conciseness
 #then look at styles, mobile responsiveness
-
-
-#issues:
-#username link undefined on next page
-#edit link is showing on every post- needs to be if current user
