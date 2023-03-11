@@ -90,6 +90,9 @@ p {
 .post-group .right-post .likes {
   font-size: 0.8rem;
 }
+.post-group .right-post .no-log-likes {
+  color: rgb(188, 188, 188);
+}
 .post-group .right-post .user-liked i {
   color: red;
 }

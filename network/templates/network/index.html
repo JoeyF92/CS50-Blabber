@@ -4,13 +4,15 @@
 {% block body %}
 
     
-
+    
     <section>
-        <form action="{% url 'new_post' %}" method="post">
-            {% csrf_token %}
-            {{form}}
-            <button type="submit" class="btn btn-light new-post">Post</button>
-        </form>
+        {% if user.is_authenticated %}
+            <form id="new-post-form" action="{% url 'new_post' %}" method="post">
+                {% csrf_token %}
+                {{form}}
+                <button type="submit" class="btn btn-light new-post">Post</button>
+            </form>
+        {% endif %}
     </section>
     
 
@@ -37,7 +39,13 @@
                     {% else %}
                         class="user-disliked likes"
                     {% endif %}>
-                    <i class="fa fa-heart"></i>                  
+                    <i
+                    {% if user.is_authenticated %}
+                        class="fa fa-heart like-logged"
+                    {% else %}
+                        class="fa fa-heart"
+                    {% endif %}
+                    ></i>                  
                     <span class="num-likes">{% if post.num_likes > 0 %} ({{post.num_likes}}){% endif %}</span>
                     </p>
                 </div>

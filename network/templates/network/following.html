@@ -24,7 +24,13 @@
                     {% else %}
                         class="user-disliked likes"
                     {% endif %}>
-                    <i class="fa fa-heart"></i>
+                    <i
+                    {% if user.is_authenticated %}
+                        class="fa fa-heart like-logged"
+                    {% else %}
+                        class="fa fa-heart"
+                    {% endif %}
+                    ></i> 
                     <span class="num-likes">{% if post.num_likes > 0 %} ({{post.num_likes}}){% endif %}</span>
                     </p>
                 </div>

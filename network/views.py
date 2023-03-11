@@ -167,8 +167,10 @@ def load_post(request, page, page_type):
     if request.user.is_authenticated:
         #extract paginated post for the requested page - passing in the user to see what posts they liked
         data = paginated_post(page, request.user, page_type)
+        data['isloggedin'] = True
     else:
         data = guest_paginated_post(page, None, page_type)
+        data['isloggedin'] = False
     return JsonResponse(data, safe=False, status=200)
 
 @login_required
@@ -213,6 +215,7 @@ def new_post(request):
 
 @login_required
 def likes(request, post_id, action):
+    print('hody')
     user = request.user
     post = Post.objects.get(id=post_id)
     #to dislike post:
@@ -276,12 +279,12 @@ def profile(request, user_id):
     if request.user.is_authenticated:
         #extract paginated post
         context = paginated_post(1, user, 'Profile')
+        #check whether logged in user follows the profile
+        check =  Follow.objects.filter(user = request.user, user_to_follow = user )  
         #if we're looking at the current users profile, load the new post form
         if user_id == request.user.id:
             form = NewPostForm()
             context['form'] = form
-            #check whether logged in user follows the profile
-            check =  Follow.objects.filter(user = request.user, user_to_follow = user )  
     else:
         #extract paginated post
         context = guest_paginated_post(1, user, 'Profile')
@@ -290,7 +293,9 @@ def profile(request, user_id):
     followers_count = Follow.objects.filter(user_to_follow = user).count()
     context['profile'] = {'userid': user.id, 'username': user.username, 'following_count':following_count, 'followers_count': followers_count}
     if check:
-        context['profile']['user_follows']= True 
+        context['profile']['user_follows']= True
+    else:
+        context['profile']['user_follows']= False
     return render(request, "network/profile.html", context)
 
 @login_required
@@ -299,11 +304,15 @@ def follow(request, user_id, action):
         user_to_follow = get_object_or_404(User, id=user_id)
         if action == 'Follow':
             follow = Follow.objects.create(user=request.user, user_to_follow=user_to_follow)
-            return JsonResponse({"message": "Followed successfully."}, status=200)       
+            message =  "Followed Successfully."      
         else:
             unfollow = Follow.objects.get(user=request.user, user_to_follow = user_to_follow)
             unfollow.delete()
-            return JsonResponse({"message": "Unfollowed successfully."}, status=200)       
+            message =  "Unfollowed Successfully." 
+        #get updated follow/following counts for the profile
+        profile_following = Follow.objects.filter(user__id = user_id).count()
+        profile_followers = Follow.objects.filter(user_to_follow__id = user_id ).count()
+        return JsonResponse({"message": message, "followers": profile_followers, "following" : profile_following}, status=200)       
     except User.DoesNotExist:
         return JsonResponse({"error": "User not found."}, status=404)
     except Follow.DoesNotExist:

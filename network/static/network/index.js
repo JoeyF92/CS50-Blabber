@@ -1,15 +1,15 @@
 var pageCount = 1; 
 document.addEventListener('DOMContentLoaded', function() {
     //use this for showing messages
-    const flashDiv = document.querySelector('.message');
+    const bodyMessage = document.querySelector('.body');
     let status;
     let message;
 
     function main(){
         
 
-        if(document.querySelector('form')){
-            document.querySelector('form').addEventListener('submit', e => newPost(e));
+        if(document.querySelector('#new-post-form')){
+            document.querySelector('#new-post-form').addEventListener('submit', e => newPost(e));
         }
         document.querySelectorAll('.load-posts').forEach(item => item.addEventListener('click', e => loadPost(e)));
 
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function likeEventListeners() {
-        document.querySelectorAll('.fa-heart').forEach(item => item.addEventListener('click', e => likePost(e)));
+        document.querySelectorAll('.like-logged').forEach(item => item.addEventListener('click', e => likePost(e)));
      }
 
     function editClick(){
@@ -57,7 +57,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 "X-CSRFToken": form.csrfmiddlewaretoken.value
             }
         })
-        .then(response => response.json())
+        .then(response => 
+            {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
         .then(result => {
             let post = result.post.post;
             let timestamp = result.post.timestamp;
@@ -133,7 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     //so ive got userid - do i have current users id?
                     let isOwner = data.posts[i].is_owner;
                     let userId = data.posts[i].userid;
-                    let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType);
+                    let isLoggedIn = data.isloggedin;
+                    let newPost = createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType, isLoggedIn);
                 }
                 //check if there is a next or previous page we can load, and show buttons accordingly
                 prevButton = document.querySelector('.prev-btn')
@@ -174,9 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 else{
                     likeText.innerHTML = '';
                 }
-                console.log(res.count);
-
-
             })
 
         }
@@ -191,23 +195,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 else{
                     likeText.innerHTML = '';
                 }
-                console.log(res.count);
             })
         }
     }
 
     function likeApi(action, postId){
-        url = 'likes/' + postId + '/' + action;
+        url = '/likes/' + postId + '/' + action;
         return fetch(url)
         .then(response => response.json())
         .then(data => {
              return data;
         });
-
-
     }
 
-    function createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType){
+    function createPost(post, timestamp, username, id, userLiked, numLikes, isOwner, userId, postType, isLoggedIn){
         let postSection = document.querySelector('.post-section');
         //create a new post, adding in the information from the function params
         let postGroup = document.createElement('div');
@@ -257,6 +258,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let heart = document.createElement('i');
         heart.classList.add('fa');
         heart.classList.add('fa-heart');
+        //add like functionality if user authenticated
+        if(isLoggedIn){
+            heart.classList.add('like-logged');
+        }
         likeP.append(heart);
         let span = document.createElement('span');
         span.classList.add('num-likes');
@@ -457,8 +462,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function followUser(e){
         e.preventDefault()
         let button = e.target
-        followId = e.target.dataset.followId;
-        followAction = e.target.dataset.followAction
+        //get profile id and follow action from the page
+        let followId = e.target.dataset.followId;
+        let followAction = e.target.dataset.followAction;
+        //get follow/followers p's to update inner html
+        let followDiv = e.target.parentNode.parentNode.parentNode;
+        let followingCount = followDiv.querySelector('#following-no');
+        let followersCount = followDiv.querySelector('#followers-no');
         fetch('/follow/' + followId + '/' + followAction)
         .then(response => {
             status = response.status
@@ -466,7 +476,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(text => {
             message = text['message']
-            console.log(message)
             if(status ==200){
                 successMessage(message)
                 if(followAction === 'Follow'){
@@ -477,6 +486,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     button.dataset.followAction = 'Follow';
                     button.innerHTML = "Follow";
                 }
+                followingCount.innerHTML = "Follows: " + text["following"];
+                followersCount.innerHTML = "Followers: " + text["followers"];
             }
             else{
                 errorMessage(message)
@@ -486,13 +497,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function successMessage(message){
+        let flashDiv = document.createElement('div');
+        flashDiv.classList.add('message');
+        flashDiv.classList.add('success');
         flashDiv.innerHTML = message;
-        flashDiv.classList = 'message success';
+        bodyMessage.insertBefore(flashDiv, bodyMessage.firstChild);
     }
 
     function errorMessage(message){
+        let flashDiv = document.createElement('div');
+        flashDiv.classList.add('message');
+        flashDiv.classList.add('success');
         flashDiv.innerHTML = message;
-        flashDiv.classList = 'message error';
+        bodyMessage.insertBefore(flashDiv, bodyMessage.firstChild);
     }
 
     
