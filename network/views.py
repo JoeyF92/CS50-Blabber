@@ -302,12 +302,4 @@ def register(request):
 
 
 
-#when a follow page is blank?
-#logged out messaging
-#add some error handling for urls that dont exist, or users not logged in or url parameters not there
-#log in functionality- ie what to see if not logged in, be thorough
-#consolidate new post function into paginated post function? 
-#go through each function, syntax, error handling, conciseness
-#then look at styles, mobile responsiveness
 
-#notes for next time:

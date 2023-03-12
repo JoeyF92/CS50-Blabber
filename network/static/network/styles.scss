@@ -36,6 +36,11 @@ $border: rgb(209, 209, 209);
     background-color: rgba(255, 0, 0, 0.2169);
 }
 
+.navbar{
+    justify-content: space-between;
+}
+
+
 body{
     background-color: $color3;
     color: $color5;
@@ -43,8 +48,17 @@ body{
     font-weight: 400;
 }
 
+#logo{
+    width: 14rem;
+}
+
 a{
     color: $links;
+}
+
+h4, #following-no, #followers-no{
+    font-weight: 400;
+    font-style: bold;
 }
 
 button{
@@ -263,6 +277,31 @@ p{
     animation-fill-mode: forwards;
 }
 
+.sign-in-form{
+    width: 50vw;;
+}
+
+.signin-block{
+    width: 60vw;
+    margin: auto;
+}
+
+#login-p{
+    text-align: center;
+    margin: auto;
+    margin-top: 4rem;
+    display: block;
+}
+
+.message{
+    text-align: center;
+}
+
+.btn{
+    background-color: $color1;
+}
+
+
 @keyframes remove-post{
     0%{
         opacity: 1;
@@ -365,8 +404,8 @@ p{
 }
 
 @media (max-width: 400px) {
-    button{
-        width: 4rem !important;
+    #logo{
+        width: 8rem;
     }
     .left-post{
         width: 50% !important;
@@ -387,5 +426,13 @@ p{
     }
     #following-no, #followers-no{
         font-size: 0.8rem !important;
+    }
+    button{
+        width: 8rem !important;
+    }
+    .btn-log{
+        margin: auto !important;
+        text-align: center !important;
+        display: block;
     }
   }

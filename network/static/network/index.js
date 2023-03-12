@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
         input.id = "postInput";
         input.name = "post";
         input.style.width = "70%";
-        input.placeholder = e.target.dataset.formContent;
+        //input.placeholder = e.target.dataset.formContent;
 
         // Get the CSRF token from the cookie
         const csrfToken = Cookies.get('csrftoken');
