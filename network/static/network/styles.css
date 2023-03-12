@@ -21,6 +21,44 @@
   background-color: rgba(255, 0, 0, 0.2169);
 }
 
+body {
+  background-color: #e9e5ec;
+  color: #3c3441;
+  font-family: "Outfit", sans-serif;
+  font-weight: 400;
+}
+
+a {
+  color: #6d8a7b;
+}
+
+button {
+  color: #3c3441;
+  background-color: #F0F2F2;
+  text-transform: uppercase;
+  font-weight: 200;
+  letter-spacing: 1px;
+  width: 6.5rem;
+}
+
+button:disabled {
+  background-color: #e7e9e8;
+  border: none;
+}
+
+button:not([disabled]):hover {
+  background-color: #e9e5ec;
+}
+
+button:not([disabled]):active {
+  border: 0;
+}
+
+.title {
+  text-align: center;
+  margin: 2rem auto 2rem auto;
+}
+
 form {
   width: 80vw;
   margin: auto;
@@ -59,22 +97,31 @@ p {
   width: 80vw;
   margin: auto;
   margin-top: 1rem;
-  border: 2px solid rgb(221, 218, 218);
+  border: 2px solid rgb(209, 209, 209);
   border-radius: 1%;
-  box-shadow: 1px 1px 3px rgb(233, 226, 226);
-  height: 5.5rem;
+  box-shadow: 5px 5px 10px rgb(182, 182, 182);
+  height: auto;
+  background-color: rgba(191, 184, 199, 0.8235294118);
+  overflow: hidden;
 }
 .post-group .left-post {
   width: 30%;
+  min-width: 5rem;
+  overflow-x: hidden;
   text-align: right;
   padding-right: 3rem;
+  padding-left: 1rem;
   padding-top: 1.5rem;
 }
 .post-group .left-post .time-post {
   display: block;
   font-size: 0.5rem;
 }
+.post-group .right-post {
+  width: 70%;
+}
 .post-group .right-post p {
+  font-size: 0.9rem;
   display: block;
 }
 .post-group .right-post p .likes {
@@ -85,22 +132,22 @@ p {
 }
 .post-group .right-post .edited {
   font-size: 0.6rem;
-  color: rgb(188, 188, 188);
+  color: #636363;
 }
 .post-group .right-post .likes {
   font-size: 0.8rem;
 }
 .post-group .right-post .no-log-likes {
-  color: rgb(188, 188, 188);
+  color: rgb(134, 129, 129);
 }
 .post-group .right-post .user-liked i {
-  color: red;
+  color: rgb(204, 119, 119);
 }
 .post-group .right-post .user-liked i:hover {
   animation: dislike 0.5s;
 }
 .post-group .right-post .user-disliked i {
-  color: rgb(189, 189, 189);
+  color: rgb(134, 129, 129);
 }
 .post-group .right-post .user-disliked i:hover {
   animation: like 0.5s;
@@ -267,5 +314,28 @@ p {
   }
   100% {
     opacity: 0;
+  }
+}
+@media (max-width: 400px) {
+  button {
+    width: 4rem !important;
+  }
+  .left-post {
+    width: 50% !important;
+  }
+  .left-post a {
+    font-size: 0.7rem;
+  }
+  .left-post .time-post {
+    font-size: 0.4rem !important;
+  }
+  .right-post .post-post {
+    font-size: 0.7rem !important;
+  }
+  #follows-div, #profile-name {
+    width: 40vw !important;
+  }
+  #following-no, #followers-no {
+    font-size: 0.8rem !important;
   }
 }/*# sourceMappingURL=styles.css.map */

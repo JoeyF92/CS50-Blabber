@@ -1,3 +1,14 @@
+$color1: #F0F2F2;
+$color2: #e7e9e8;
+$color3: #979B9E;
+$color4: #bfb8c7d2;
+$color5: #3c3441;
+$links: #6d8a7b;
+$shadow: rgb(182, 182, 182);
+$color3: #e9e5ec;
+$border: rgb(209, 209, 209);
+
+
 %message {
     font-family: sans-serif;
     font-size: 18px;
@@ -25,7 +36,43 @@
     background-color: rgba(255, 0, 0, 0.2169);
 }
 
+body{
+    background-color: $color3;
+    color: $color5;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+}
 
+a{
+    color: $links;
+}
+
+button{
+    color: $color5;
+    background-color: $color1;
+    text-transform: uppercase;
+    font-weight: 200;
+      letter-spacing: 1px;
+      width: 6.5rem;
+  }
+
+button:disabled{
+    background-color: $color2;
+    border: none;
+}
+
+button:not([disabled]):hover{
+    background-color: $color3;
+}
+
+button:not([disabled]):active{
+    border: 0;
+}
+
+.title{
+    text-align: center;
+    margin: 2rem auto 2rem auto;
+}
 
 form{
     width: 80vw;
@@ -68,17 +115,22 @@ p{
     width: 80vw;
     margin: auto;
     margin-top: 1rem;
-    border: 2px solid rgb(221, 218, 218);
+    border: 2px solid $border;
     border-radius: 1%;
-    box-shadow: 1px 1px 3px rgb(233, 226, 226);
-    height: 5.5rem;
+    box-shadow: 5px 5px 10px $shadow;
+    height: auto;
+    background-color: $color4;
+    overflow: hidden;
        
 
     
     .left-post{
         width: 30%;
+        min-width: 5rem;
+        overflow-x:hidden;
         text-align: right;
         padding-right: 3rem;
+        padding-left: min(1rem);
         padding-top: 1.5rem;
         .time-post{
             display: block;
@@ -87,8 +139,10 @@ p{
     }
 
     .right-post{
+        width: 70%;
     
         p{
+            font-size: 0.9rem;
             display: block;
             .likes{
                 font-size: 0.5rem;
@@ -100,7 +154,7 @@ p{
 
         .edited{
             font-size: 0.6rem;
-            color: rgb(188, 188, 188);
+            color: #636363;
         }
 
         .likes{
@@ -108,12 +162,12 @@ p{
         }       
 
         .no-log-likes{
-            color: rgb(188, 188, 188);
+            color: rgb(134, 129, 129);
         }
         .user-liked
         {
             i{
-                color: red;
+                color: rgb(204, 119, 119);
             }
             i:hover{
                 animation: dislike 0.5s;
@@ -123,7 +177,8 @@ p{
         .user-disliked
         {
             i{
-                color: rgb(189, 189, 189);
+                color: rgb(134, 129, 129);
+            
             }
             i:hover{
                 animation: like 0.5s;
@@ -308,3 +363,29 @@ p{
     60%{opacity: 1;}
     100%{opacity: 0;}
 }
+
+@media (max-width: 400px) {
+    button{
+        width: 4rem !important;
+    }
+    .left-post{
+        width: 50% !important;
+        a{
+            font-size: 0.7rem;
+        }
+        .time-post{
+            font-size: 0.4rem !important;
+        }
+    }
+    .right-post{
+        .post-post{
+            font-size: 0.7rem !important;
+        }
+    }
+    #follows-div, #profile-name{
+        width: 40vw !important;
+    }
+    #following-no, #followers-no{
+        font-size: 0.8rem !important;
+    }
+  }
