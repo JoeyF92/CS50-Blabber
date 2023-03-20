@@ -6,7 +6,7 @@ class NewPostForm(ModelForm):
     class Meta:
         model = Post
         fields = '__all__'
-        exclude = ['user', 'likes', 'timestamp']
+        exclude = ['user', 'likes', 'timestamp', 'edited']
         widgets = {            
             'post': Textarea(attrs={
                 'class': "form-control",

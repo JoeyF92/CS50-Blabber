@@ -2,25 +2,36 @@
 
 
 {% block body %}
+<h4 class="title"> All Posts: </h4>
+    
+    
     <section>
-        <form action="{% url 'new_post' %}" method="post">
-            {% csrf_token %}
-            {{form}}
-            <button type="submit" class="btn btn-light new-post">Post</button>
-        </form>
+        {% if user.is_authenticated %}
+            <form id="new-post-form" action="{% url 'new_post' %}" method="post">
+                {% csrf_token %}
+                {{form}}
+                <button type="submit" class="btn btn-light new-post">Post</button>
+            </form>
+        {% endif %}
     </section>
-   
- 
+    
 
     <section class="post-section">   
         {% for post in posts %}
             <div class="post-group">
                 <div class="left-post"> 
-                    <p>{{post.username}} </p>
-                    <p class="time-post"> {{post.timestamp}}</p>
+                    <p><a href="{% url 'profile' user_id=post.userid %}">{{post.username}}</a> </p>
+                    
+                    <p class="time-post">  {{post.timestamp}}</p>
                 </div>
                 <div class="right-post">
-                    <p class="post-post"> {{post.post}}</p>
+                    <p class="post-post"> {{post.post}} 
+                        {% if post.edited == True %}
+                            <span class="edited">(edited)</span>
+                        {% endif %}
+                        {% if user.id == post.userid %} 
+                            <a class="edit" data-form-content= {{post.post}} href="javascript:;">Edit</a> 
+                        {% endif %} </p>
                     <p class="post-id" hidden>{{post.id}}</p>
                     <p 
                     {% if post.user_liked == True %} 
@@ -28,7 +39,13 @@
                     {% else %}
                         class="user-disliked likes"
                     {% endif %}>
-                    <i class="fa fa-heart"></i>
+                    <i
+                    {% if user.is_authenticated %}
+                        class="fa fa-heart like-logged"
+                    {% else %}
+                        class="fa fa-heart"
+                    {% endif %}
+                    ></i>                  
                     <span class="num-likes">{% if post.num_likes > 0 %} ({{post.num_likes}}){% endif %}</span>
                     </p>
                 </div>

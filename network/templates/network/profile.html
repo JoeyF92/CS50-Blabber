@@ -2,7 +2,43 @@
 
 
 {% block body %}
-<h4 class="title"> Your Followed Posts: </h4>
+
+    <section class="profile-info">
+        <div id="profile-name">
+            <div>
+               <h4> {{profile.username}} </h4>
+            </div>
+            <div id="follow-button">
+                {% if user.is_authenticated %}
+                    {% if user.id != profile.userid %}
+                        {% if profile.user_follows %}
+                            <button class="follow" data-follow-action="Unfollow" data-follow-id="{{profile.userid}}"> Unfollow </button>
+                        {% else %}
+                            <button class="follow" data-follow-action="Follow" data-follow-id="{{profile.userid}}"> Follow </button>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>  
+        </div>
+        <div id="follows-div">
+            <p id="following-no">Follows:&nbsp;&nbsp;&nbsp; {%if profile.following_count > 0 %} {{profile.following_count}} {% else %} 0 {% endif %}</p>
+            <p id="followers-no">Followers: {%if profile.followers_count > 0 %} {{profile.followers_count}} {% else %} 0 {% endif %} </p>
+        </div>
+        
+    </section>
+
+
+    {% if form %}
+    <section>
+        <form id="new-post-form" action="{% url 'new_post' %}" method="post">
+            {% csrf_token %}
+            {{form}}
+            <button type="submit" class="btn btn-light new-post">Post</button>
+        </form>
+    </section>
+    {% endif %}
+ 
+
     <section class="post-section">   
         {% for post in posts %}
             <div class="post-group">

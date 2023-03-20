@@ -1,4 +1,92 @@
+$color1: #F0F2F2;
+$color2: #e7e9e8;
+$color3: #979B9E;
+$color4: #bfb8c7d2;
+$color5: #3c3441;
+$links: #6d8a7b;
+$shadow: rgb(182, 182, 182);
+$color3: #e9e5ec;
+$border: rgb(209, 209, 209);
 
+
+%message {
+    font-family: sans-serif;
+    font-size: 18px;
+    text-align: center;
+    color: #FFFFFF;
+    animation: message-flash;
+    animation-duration: 0.5s;
+    animation-iteration-count: 4;
+    animation-fill-mode: forwards;
+}
+
+
+.success {
+    @extend %message;
+    background-color: rgba(0, 128, 0, 0.216);
+}
+
+.warning {
+    @extend %message;
+    background-color: rgba(255, 166, 0, 0.216);
+}
+
+.error {
+    @extend %message;
+    background-color: rgba(255, 0, 0, 0.2169);
+}
+
+.navbar{
+    justify-content: space-between;
+}
+
+
+body{
+    background-color: $color3;
+    color: $color5;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+}
+
+#logo{
+    width: 14rem;
+}
+
+a{
+    color: $links;
+}
+
+h4, #following-no, #followers-no{
+    font-weight: 400;
+    font-style: bold;
+}
+
+button{
+    color: $color5;
+    background-color: $color1;
+    text-transform: uppercase;
+    font-weight: 200;
+      letter-spacing: 1px;
+      width: 6.5rem;
+  }
+
+button:disabled{
+    background-color: $color2;
+    border: none;
+}
+
+button:not([disabled]):hover{
+    background-color: $color3;
+}
+
+button:not([disabled]):active{
+    border: 0;
+}
+
+.title{
+    text-align: center;
+    margin: 2rem auto 2rem auto;
+}
 
 form{
     width: 80vw;
@@ -41,17 +129,22 @@ p{
     width: 80vw;
     margin: auto;
     margin-top: 1rem;
-    border: 2px solid rgb(221, 218, 218);
+    border: 2px solid $border;
     border-radius: 1%;
-    box-shadow: 1px 1px 3px rgb(233, 226, 226);
-    height: 5.5rem;
+    box-shadow: 5px 5px 10px $shadow;
+    height: auto;
+    background-color: $color4;
+    overflow: hidden;
        
 
     
     .left-post{
         width: 30%;
+        min-width: 5rem;
+        overflow-x:hidden;
         text-align: right;
         padding-right: 3rem;
+        padding-left: min(1rem);
         padding-top: 1.5rem;
         .time-post{
             display: block;
@@ -60,8 +153,10 @@ p{
     }
 
     .right-post{
+        width: 70%;
     
         p{
+            font-size: 0.9rem;
             display: block;
             .likes{
                 font-size: 0.5rem;
@@ -69,16 +164,24 @@ p{
         }
         .post-post{
             padding-top: 0.5rem;
-      
-            
         }
+
+        .edited{
+            font-size: 0.6rem;
+            color: #636363;
+        }
+
         .likes{
             font-size: 0.8rem;
         }       
+
+        .no-log-likes{
+            color: rgb(134, 129, 129);
+        }
         .user-liked
         {
             i{
-                color: red;
+                color: rgb(204, 119, 119);
             }
             i:hover{
                 animation: dislike 0.5s;
@@ -88,7 +191,8 @@ p{
         .user-disliked
         {
             i{
-                color: rgb(189, 189, 189);
+                color: rgb(134, 129, 129);
+            
             }
             i:hover{
                 animation: like 0.5s;
@@ -106,10 +210,113 @@ p{
 
 }
 
+.profile-info{
+    display: flex;
+    width: 40vw;
+    margin: auto;
+    margin-top: 2rem;
+
+    #profile-name{
+        width: 20vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        #follow-button{
+            margin-top: 0.5rem;
+        }
+    }
 
 
+    #follows-div{
+        width: 20vw;
+        margin-left: 1rem;
+        p{
+            display: block;
+        }
+    }
+}
 
 
+.edit-box{
+    margin: auto;
+    margin-left: 9%;
+    position: fixed;
+    width : 80vw;
+    height: 12rem;
+    top: 50%;
+    filter: none;
+    border: 2px solid rgb(221, 218, 218);
+    border-radius: 1%;
+    box-shadow: 1px 1px 3px rgb(233, 226, 226);
+    form{
+        margin-top: 0.5rem;
+        text-align: center;
+        input{
+            margin: 0.5rem 0.5rem 0.5rem auto;
+        }
+    }
+    .fa-times{
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+    .fa-times:hover{
+        color:rgb(155, 146, 146);
+        cursor: pointer;
+    }
+       
+}
+
+.blur-section{
+    filter: blur(5px);
+}
+
+.hide-post{
+    animation: remove-post;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+}
+
+.sign-in-form{
+    width: 50vw;;
+}
+
+.signin-block{
+    width: 60vw;
+    margin: auto;
+}
+
+#login-p{
+    text-align: center;
+    margin: auto;
+    margin-top: 4rem;
+    display: block;
+}
+
+.message{
+    text-align: center;
+}
+
+.btn{
+    background-color: $color1;
+}
+
+
+@keyframes remove-post{
+    0%{
+        opacity: 1;
+        height: 5.5rem;
+    }
+    80%{
+        opacity: 0;
+        height: 5.5rem;
+    }
+    100%{
+        height: 0rem;
+        opacity: 0;
+        overflow: hidden;
+    }
+}
 
 
 @keyframes like
@@ -189,3 +396,43 @@ p{
         transform: translateX(0);
     }
 }
+
+@keyframes message-flash{
+    0%{opacity: 1;}
+    60%{opacity: 1;}
+    100%{opacity: 0;}
+}
+
+@media (max-width: 400px) {
+    #logo{
+        width: 8rem;
+    }
+    .left-post{
+        width: 50% !important;
+        a{
+            font-size: 0.7rem;
+        }
+        .time-post{
+            font-size: 0.4rem !important;
+        }
+    }
+    .right-post{
+        .post-post{
+            font-size: 0.7rem !important;
+        }
+    }
+    #follows-div, #profile-name{
+        width: 40vw !important;
+    }
+    #following-no, #followers-no{
+        font-size: 0.8rem !important;
+    }
+    button{
+        width: 8rem !important;
+    }
+    .btn-log{
+        margin: auto !important;
+        text-align: center !important;
+        display: block;
+    }
+  }

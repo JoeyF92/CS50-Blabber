@@ -123,3 +123,4 @@ STATIC_URL = '/static/'
 
 #get rid of annoying warning
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+

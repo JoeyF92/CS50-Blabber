@@ -3,22 +3,31 @@
 <html lang="en">
     <head>
         <title>{% block title %}Blabber{% endblock %}</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, width=device-width">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <link href="{% static 'network/styles.css' %}" rel="stylesheet">
         <script src="{% static 'network/index.js' %}"></script> 
         <script src="https://kit.fontawesome.com/a75b8c4be8.js" crossorigin="anonymous"></script>
-        
+        <!-- to use the cookies object, to access csrf value in the edit function in js  -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
     </head>
     <body>
 
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Blabber</a>
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <img id="logo" src="{% static 'logo.png' %}" alt="Logo">
+            </a>
           
             <div>
               <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><strong>{{ user.username }}</strong></a>
+
+                        <a class="nav-link" href="{% url 'profile' user_id=user.id %}"><strong>{{ user.username }}</strong></a>
                     </li>
                 {% endif %}
                 <li class="nav-item">
@@ -44,6 +53,7 @@
           </nav>
         
         <div class="body">
+            <div class="message"> </div>
             {% block body %}
             {% endblock %}
         </div>
